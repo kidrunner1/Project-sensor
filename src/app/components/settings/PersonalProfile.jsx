@@ -11,32 +11,36 @@ export default function PersonalProfile() {
   const [newData, setNewData] = useState({});
   const [imageFile, setImageFile] = useState(null);
   const [imageURL, setImageURL] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const auth = getAuth();
-  const userId = auth.currentUser ? auth.currentUser.uid : null;
-
-  useEffect(() => {
-    console.log("Updated Image URL:", imageURL);
-  }, [imageURL]);
+  const user = auth.currentUser;
+  const userId = user?.uid;
 
   useEffect(() => {
     if (!userId) return;
 
     const fetchUserData = async () => {
-      const userDoc = await getDoc(doc(db, "users", userId));
-      if (userDoc.exists()) {
-        setUserData(userDoc.data());
-        setImageURL(userDoc.data().photoURL || ""); // Set default image URL
-      } else {
-        console.log("No such user!");
+      try {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+          setUserData(userDoc.data());
+          setImageURL(userDoc.data().photoURL || "/images/profile.png");
+        } else {
+          console.error("User data not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchUserData();
   }, [userId]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    console.log("Selected file:", file);
     setImageFile(file);
   };
 
@@ -44,11 +48,8 @@ export default function PersonalProfile() {
     if (imageFile) {
       const imageRef = ref(storage, `profilePictures/${userId}`);
       try {
-        console.log("Uploading image...");
         await uploadBytes(imageRef, imageFile);
-        console.log("Image uploaded successfully.");
         const url = await getDownloadURL(imageRef);
-        console.log("Image URL:", url);
         setImageURL(url);
         return url;
       } catch (error) {
@@ -62,109 +63,84 @@ export default function PersonalProfile() {
     if (!userId) return;
 
     try {
-      const photoURL = await handleImageUpload(); // Upload image if any
+      const photoURL = await handleImageUpload();
       const updatedData = { ...newData, photoURL };
 
-      console.log("Updating Firestore with data:", updatedData);
       await updateDoc(doc(db, "users", userId), updatedData);
 
       setUserData((prev) => ({ ...prev, ...updatedData }));
       setIsEditing(false);
-      console.log("Profile updated successfully.");
     } catch (error) {
       console.error("Error updating profile:", error);
     }
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const displayNameOrName = user?.displayName || userData?.name || "No Name";
+
   return (
-    <div className="p-4 max-w-md mx-auto">
+    <div className="mx-4 md:mx-6 lg:mx-8 p-4 max-w-md">
       <h1 className="text-2xl font-bold mb-6">Personal Profile</h1>
 
       {/* Profile Picture */}
-      <div className="mb-4 justify-start flex items-center">
+      <div className="mb-4 flex flex-col items-center">
         <img
-          src={imageURL || "/images/profile.png"}
+          src={imageURL}
           alt="Profile"
-          className="w-24 h-24 rounded-full object-cover mx-auto"
+          className="w-24 h-24 rounded-full object-cover"
         />
         {isEditing && (
           <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="mt-2"
-        />
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="mt-2"
+          />
         )}
       </div>
 
-      {/* Profile Details */}
-      <div className="space-y-4">
-        {/* Name Section */}
-        <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-          <div className="flex flex-col ml-4">
-            <label className="text-sm font-medium text-gray-600">
-              ชื่อ - นามสกุล
-            </label>
-            {isEditing ? (
-              <input
-                type="text"
-                defaultValue={userData?.name || ""}
-                onChange={(e) =>
-                  setNewData({
-                    ...newData,
-                    name: e.target.value,
-                  })
-                }
-                className="mt-1 w-full border rounded p-2"
-              />
-            ) : (
-              <p className="mt-1 text-gray-700">{userData?.name || ""}</p>
-            )}
-          </div>
-          {!isEditing && (
-            <span
-              className="text-blue-600 cursor-pointer mr-4"
-              onClick={() => setIsEditing(true)}
-            >
-              แก้ไข
-            </span>
-          )}
-        </div>
-
-        {/* Phone Number Section */}
-        <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-          <div className="flex flex-col ml-4">
-            <label className="text-sm font-medium text-gray-600">
-              เบอร์โทรศัพท์
-            </label>
-            {isEditing ? (
-              <input
-                type="text"
-                defaultValue={userData?.phoneNumber || ""}
-                onChange={(e) =>
-                  setNewData({ ...newData, phoneNumber: e.target.value })
-                }
-                className="mt-1 w-full border rounded p-2"
-              />
-            ) : (
-              <p className="mt-1 text-gray-700">
-                {userData?.phoneNumber || ""}
-              </p>
-            )}
-          </div>
-          {!isEditing && (
-            <span
-              className="text-blue-600 cursor-pointer mr-4"
-              onClick={() => setIsEditing(true)}
-            >
-              แก้ไข
-            </span>
-          )}
-        </div>
+      {/* Email */}
+      <div className="border-b pb-2">
+        <label className="text-sm font-medium">อีเมล</label>
+        <p className="mt-1">{user?.email || "No Email"}</p>
       </div>
 
-      {/* Actions */}
-      <div className="mt-6 flex gap-4">
+      {/* Name */}
+      <div className="border-b pb-2 mt-6">
+        <label className="text-sm font-medium">ชื่อ - นามสกุล</label>
+        {isEditing ? (
+          <input
+            type="text"
+            defaultValue={displayNameOrName}
+            onChange={(e) => setNewData({ ...newData, name: e.target.value })}
+            className="mt-1 w-full border rounded p-2"
+          />
+        ) : (
+          <p className="mt-1">{displayNameOrName}</p>
+        )}
+      </div>
+
+      {/* Phone Number */}
+      <div className="border-b pb-2 mt-6">
+        <label className="text-sm font-medium">เบอร์โทรศัพท์</label>
+        {isEditing ? (
+          <input
+            type="text"
+            defaultValue={userData?.phoneNumber || ""}
+            onChange={(e) =>
+              setNewData({ ...newData, phoneNumber: e.target.value })
+            }
+            className="mt-1 w-full border rounded p-2"
+          />
+        ) : (
+          <p className="mt-1">{userData?.phoneNumber || "No Phone Number"}</p>
+        )}
+      </div>
+
+      <div className="mt-6 flex gap-4 ">
         {isEditing ? (
           <>
             <button

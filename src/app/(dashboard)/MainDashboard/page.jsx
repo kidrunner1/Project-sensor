@@ -9,7 +9,7 @@ import BottomChart from "../../components/BottomChart";
 import { auth } from "@/app/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-
+import ExportData from "@/app/components/ExportData";
 const HomePageTest = () => {
   const router = useRouter();
 
@@ -30,10 +30,9 @@ const HomePageTest = () => {
       <div className="w-full lg:w-2/3 flex flex-col gap-8">
         {/* TEMP CARD */}
         <div className="flex gap-4 justify-between flex-wrap">
-          <Card type="ความชื้น" int="23" />
-          <Card type="อุณหภูมิ" int="21" />
-          <Card type="ความเร็วลม" int="32" />
-          <Card type="ทิศทางลม" int="12" />
+          <Card type="ความชื้น"/>
+          <Card type="อุณหภูมิ"/>
+          <Card type="ความเร็วลม"/>
         </div>
         {/* MIDDLE CHART */}
         <div className="flex gap-4 flex-col lg:flex-row">
@@ -42,9 +41,7 @@ const HomePageTest = () => {
             <CountChart />
           </div>
           {/* เข็มทิศ */}
-          <div className="w-full  h-[450px]">
-            {/* <Compass /> */}
-          </div>
+          <div className="w-full  h-[450px]">{/* <Compass /> */}</div>
         </div>
         {/* ATTENDENCE CHART */}
         <div className="w-full  h-[450px]">
@@ -57,7 +54,11 @@ const HomePageTest = () => {
         <div className="w-full h-[450px]"></div>
       </div>
       {/* Right */}
-      <div className="w-full lg:w-1/3">Right</div>
+      <div className="w-full lg:w-1/3">
+        <div className="w-full">
+          <ExportData name="Export Data" />
+        </div>
+      </div>
     </div>
   );
 };

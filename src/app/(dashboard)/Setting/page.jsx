@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import MenteeProfile from "@/app/components/settings/MenteeProfile";
 import PersonalProfile from "@/app/components/settings/PersonalProfile";
 import LoginSecurity from "@/app/components/settings/LoginSecurity";
 
@@ -9,8 +8,6 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "mentee":
-        return <MenteeProfile />;
       case "personal":
         return <PersonalProfile />;
       case "security":
@@ -24,7 +21,6 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-4 mx-auto p-4">
       {/* Header */}
       <h1 className="text-2xl font-semibold mb-6 text-zinc-600">Settings</h1>
-
       {/* Tabs */}
       <div className="flex gap-4 border-b pb-2">
         <button
@@ -32,7 +28,7 @@ export default function SettingsPage() {
           className={`px-4 py-2 ${
             activeTab === "personal"
               ? "border-b-2 border-emerald-800 text-emerald-600 font-semibold text-sm"
-              : "text-gray-600 hover:text-blue-600 font-semibold"
+              : "text-gray-600 hover:text-emerald-600 font-semibold"
           }`}
         >
           Personal Profile
@@ -42,7 +38,7 @@ export default function SettingsPage() {
           className={`px-4 py-2 ${
             activeTab === "security"
               ? "border-b-2 border-emerald-800 text-emerald-600 text-sm"
-              : "text-gray-600 hover:text-blue-600 font-semibold"
+              : "text-gray-600 hover:text-emerald-600 font-semibold"
           }`}
         >
           Login & Security
@@ -50,7 +46,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="">{renderContent()}</div>
+      <div className="mx-4 md:mx-6 lg:mx-8 ">{renderContent()}</div>
     </div>
   );
 }

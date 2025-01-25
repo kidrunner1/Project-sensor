@@ -49,7 +49,7 @@ const Register = () => {
     const newErrors = {};
     if (!email) newErrors.email = "กรุณากรอกอีเมล";
     if (!password) newErrors.password = "กรุณากรอกรหัสผ่าน";
-    if (!confirmPassword) newErrors.confirmPassword = "กรุณากรอกยืนยันรหัสผ่าน";
+    if (!confirmPassword) newErrors.confirmPassword = "กรุณายืนยันรหัสผ่าน";
     if (!name) newErrors.name = "กรุณากรอกชื่อ";
     if (!phoneNumber) newErrors.phoneNumber = "กรุณากรอกเบอร์โทรศัพท์";
 
@@ -57,17 +57,14 @@ const Register = () => {
       newErrors.confirmPassword = "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน";
     }
 
+    if (!validatePassword(password)) {
+      newErrors.password =
+        "รหัสผ่านต้องมีตัวอักษรตัวใหญ่, ตัวเล็ก, ตัวเลข และอักขระพิเศษ";
+    }
+
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrors({ confirmPassword: "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน" });
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     try {
       const res = await createUserWithEmailAndPassword(email, password);
@@ -137,12 +134,9 @@ const Register = () => {
                     className="bg-gray-100 outline-none text-sm flex-1 text-black"
                   />
                 </div>
-                <div className=" w-full max-w-sm p-2 flex ">
-                  {errors.email && (
-                    <p className="text-red-500">{errors.email}</p>
-                  )}
-                </div>
-
+                {errors.email && (
+                  <div className="text-red-500">{errors.email}</div>
+                )}
                 <div className="bg-gray-100 w-full max-w-sm p-2 flex items-center">
                   <MdLockOutline className="text-zinc-800 m-2" />
                   <input
@@ -150,16 +144,15 @@ const Register = () => {
                     id="password"
                     placeholder="พาสเวิร์ด"
                     value={password}
-                    onChange={(e) => handleInputChange("password",e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     className="bg-gray-100 outline-none text-sm flex-1 text-black"
                   />
                 </div>
-                <div className=" w-full max-w-sm p-2 flex ">
-                  {errors.password && (
-                    <p className="text-red-500">{errors.password}</p>
-                  )}
-                </div>
-
+                {errors.password && (
+                  <div className="text-red-500 w-full max-w-sm p-2 flex items-center">{errors.password}</div>
+                )}
                 <div className="bg-gray-100 w-full max-w-sm p-2 flex items-center">
                   <MdLockOutline className="text-zinc-800 m-2" />
                   <input
@@ -167,13 +160,17 @@ const Register = () => {
                     id="confirmPassword"
                     placeholder="ยืนยันรหัสผ่าน"
                     value={confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword",e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     className="bg-gray-100 outline-none text-sm flex-1 text-black"
                   />
                 </div>
-                <div className=" w-full max-w-sm p-2 flex ">
-                  {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword}</p>}
-                </div>
+                {errors.confirmPassword && (
+                  <div className="text-red-500">
+                    {errors.confirmPassword}
+                  </div>
+                )}
 
                 <div className="bg-gray-100 w-full max-w-sm p-2 flex items-center">
                   <FaPerson className="text-zinc-800 m-2" />
@@ -182,14 +179,13 @@ const Register = () => {
                     id="name"
                     placeholder="ชื่อ"
                     value={name}
-                    onChange={(e) => handleInputChange("name",e.target.value)}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
                     className="bg-gray-100 outline-none text-sm flex-1 text-black"
                   />
                 </div>
-                <div className=" w-full max-w-sm p-2 flex ">
-                  {errors.name && <p className="text-red-500">{errors.name}</p>}
-                </div>
-
+                {errors.name && (
+                  <div className="text-red-500">{errors.name}</div>
+                )}
                 <div className="bg-gray-100 w-full max-w-sm p-2 flex items-center">
                   <IoPhonePortraitOutline className="text-zinc-800 m-2" />
                   <input
@@ -197,14 +193,15 @@ const Register = () => {
                     id="phoneNumber"
                     placeholder="เบอร์โทรศัพท์"
                     value={phoneNumber}
-                    onChange={(e) => handleInputChange("phoneNumber",e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
                     className="bg-gray-100 outline-none text-sm flex-1 text-black"
                   />
                 </div>
-                <div className=" w-full max-w-sm p-2 flex ">
-                  {errors.phoneNumber && <p className="text-red-500">{errors.phoneNumber}</p>}
-                </div>
-
+                {errors.phoneNumber && (
+                  <div className="text-red-500">{errors.phoneNumber}</div>
+                )}
                 <button
                   type="submit"
                   className="border-2 border-zinc-800 text-zinc-800 rounded-full px-8 py-2 font-semibold hover:bg-zinc-800 hover:text-white"
