@@ -1,33 +1,34 @@
 "use client";
 import { useState, useEffect } from "react";
-import { db, storage } from "../../firebase/config";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { getAuth } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import ipconfig from "@/app/ipconfig";
 
 export default function PersonalProfile() {
   const [userData, setUserData] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newData, setNewData] = useState({});
   const [imageFile, setImageFile] = useState(null);
-  const [imageURL, setImageURL] = useState("");
+  const [imageURL, setImageURL] = useState("/images/profile.png");
   const [isLoading, setIsLoading] = useState(true);
-
-  const auth = getAuth();
-  const user = auth.currentUser;
-  const userId = user?.uid;
+  const router = useRouter();
 
   useEffect(() => {
-    if (!userId) return;
-
     const fetchUserData = async () => {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        router.push("/login");
+        return;
+      }
+
       try {
-        const userDoc = await getDoc(doc(db, "users", userId));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data());
-          setImageURL(userDoc.data().photoURL || "/images/profile.png");
-        } else {
-          console.error("User data not found.");
+        const response = await axios.get(`http://${ipconfig.API_HOST}/api/user/profile`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (response.data) {
+          setUserData(response.data);
+          setImageURL(response.data.avatar || "/images/profile.png");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -37,7 +38,7 @@ export default function PersonalProfile() {
     };
 
     fetchUserData();
-  }, [userId]);
+  }, [router]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -45,33 +46,45 @@ export default function PersonalProfile() {
   };
 
   const handleImageUpload = async () => {
-    if (imageFile) {
-      const imageRef = ref(storage, `profilePictures/${userId}`);
-      try {
-        await uploadBytes(imageRef, imageFile);
-        const url = await getDownloadURL(imageRef);
-        setImageURL(url);
-        return url;
-      } catch (error) {
-        console.error("Error uploading image:", error);
-      }
+    if (!imageFile) return imageURL;
+
+    const formData = new FormData();
+    formData.append("avatar", imageFile);
+
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      const response = await axios.post(
+        `http://${ipconfig.API_HOST}/api/user/upload-avatar`,
+        formData,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      setImageURL(response.data.avatar_url);
+      return response.data.avatar_url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return imageURL;
     }
-    return imageURL;
   };
 
   const handleUpdate = async () => {
-    if (!userId) return;
-
     try {
-      const photoURL = await handleImageUpload();
-      const updatedData = { ...newData, photoURL };
+      setIsLoading(true);
+      const accessToken = localStorage.getItem("access_token");
 
-      await updateDoc(doc(db, "users", userId), updatedData);
+      const photoURL = await handleImageUpload();
+      const updatedData = { ...newData, avatar: photoURL };
+
+      await axios.put(`http://${ipconfig.API_HOST}/api/user/update`, updatedData, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       setUserData((prev) => ({ ...prev, ...updatedData }));
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,33 +92,20 @@ export default function PersonalProfile() {
     return <div>Loading...</div>;
   }
 
-  const displayNameOrName = user?.displayName || userData?.name || "No Name";
-
   return (
     <div className="mx-4 md:mx-6 lg:mx-8 p-4 max-w-md">
       <h1 className="text-2xl font-bold mb-6">Personal Profile</h1>
 
       {/* Profile Picture */}
       <div className="mb-4 flex flex-col items-center">
-        <img
-          src={imageURL}
-          alt="Profile"
-          className="w-24 h-24 rounded-full object-cover"
-        />
-        {isEditing && (
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="mt-2"
-          />
-        )}
+        <img src={imageURL} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+        {isEditing && <input type="file" accept="image/*" onChange={handleFileChange} className="mt-2" />}
       </div>
 
       {/* Email */}
       <div className="border-b pb-2">
         <label className="text-sm font-medium">อีเมล</label>
-        <p className="mt-1">{user?.email || "No Email"}</p>
+        <p className="mt-1">{userData?.email || "No Email"}</p>
       </div>
 
       {/* Name */}
@@ -114,12 +114,12 @@ export default function PersonalProfile() {
         {isEditing ? (
           <input
             type="text"
-            defaultValue={displayNameOrName}
+            defaultValue={userData?.name || ""}
             onChange={(e) => setNewData({ ...newData, name: e.target.value })}
             className="mt-1 w-full border rounded p-2"
           />
         ) : (
-          <p className="mt-1">{displayNameOrName}</p>
+          <p className="mt-1">{userData?.name || "No Name"}</p>
         )}
       </div>
 
@@ -129,18 +129,16 @@ export default function PersonalProfile() {
         {isEditing ? (
           <input
             type="text"
-            defaultValue={userData?.phoneNumber || ""}
-            onChange={(e) =>
-              setNewData({ ...newData, phoneNumber: e.target.value })
-            }
+            defaultValue={userData?.phone || ""}
+            onChange={(e) => setNewData({ ...newData, phone: e.target.value })}
             className="mt-1 w-full border rounded p-2"
           />
         ) : (
-          <p className="mt-1">{userData?.phoneNumber || "No Phone Number"}</p>
+          <p className="mt-1">{userData?.phone || "No Phone Number"}</p>
         )}
       </div>
 
-      <div className="mt-6 flex gap-4 ">
+      <div className="mt-6 flex gap-4">
         {isEditing ? (
           <>
             <button

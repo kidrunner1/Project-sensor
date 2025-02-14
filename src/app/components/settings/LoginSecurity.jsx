@@ -1,25 +1,17 @@
 "use client";
 import { useState } from "react";
-import {
-  getAuth,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth";
+import axios from "axios";
+import ipconfig from "@/app/ipconfig";
 
 const LoginSecurity = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChangePassword = async () => {
     setError("");
@@ -36,16 +28,29 @@ const LoginSecurity = () => {
     }
 
     try {
-      const credential = EmailAuthProvider.credential(
-        user.email,
-        currentPassword
-      );
-      await reauthenticateWithCredential(user, credential);
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        setError("คุณยังไม่ได้เข้าสู่ระบบ");
+        return;
+      }
 
-      await updatePassword(user, newPassword);
+      const response = await axios.put(
+        `http://${ipconfig.API_HOST}/api/user/change-password`,
+        {
+          currentPassword,
+          newPassword,
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
       setSuccess("เปลี่ยนรหัสผ่านสำเร็จ");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setError("เกิดข้อผิดพลาด: " + err.message);
+      setError(err.response?.data?.message || "เกิดข้อผิดพลาด ไม่สามารถเปลี่ยนรหัสผ่านได้");
     }
   };
 
@@ -55,7 +60,6 @@ const LoginSecurity = () => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium">รหัสผ่านปัจจุบัน</label>
-
           <div className="relative mt-2">
             <input
               type={showCurrentPassword ? "text" : "password"}
@@ -72,12 +76,8 @@ const LoginSecurity = () => {
               {showCurrentPassword ? "ซ่อน" : "แสดง"}
             </button>
           </div>
-          <div className="mt-2">
-            <label className="block text-sm font-medium">
-              รหัสผ่านใหม่
-            </label>
-          </div>
 
+          <label className="block text-sm font-medium mt-4">รหัสผ่านใหม่</label>
           <div className="relative mt-2">
             <input
               type={showNewPassword ? "text" : "password"}
@@ -95,6 +95,7 @@ const LoginSecurity = () => {
             </button>
           </div>
 
+          <label className="block text-sm font-medium mt-4">ยืนยันรหัสผ่านใหม่</label>
           <div className="relative mt-2">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -118,7 +119,7 @@ const LoginSecurity = () => {
 
         <button
           onClick={handleChangePassword}
-          className="mt-6 w-full border-2  border-zinc-800 text-zinc-800 px-4 py-2 font-semibold rounded hover:bg-zinc-800 hover:text-white"
+          className="mt-6 w-full border-2 border-zinc-800 text-zinc-800 px-4 py-2 font-semibold rounded hover:bg-zinc-800 hover:text-white"
         >
           เปลี่ยนรหัสผ่าน
         </button>

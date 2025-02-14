@@ -25,3 +25,21 @@ body {
   font-variation-settings:
     "wdth" 100;
 }
+
+.modal-content {
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}

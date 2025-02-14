@@ -122,12 +122,6 @@ export default {
         lamaMaroonLightDark:"#800000",
         lamaMaroonLightPale:"#DB7093",
         lamaMaroonLightLight:"#CD5C5C",
-        // Navy Color
-
-
-
-
-
       }
     },
   },
