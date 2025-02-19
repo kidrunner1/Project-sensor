@@ -37,6 +37,45 @@ export default function Login() {
     }
   }, []);
 
+  // ✅ ตรวจสอบค่าของแต่ละช่องแบบเรียลไทม์
+  const validateField = (name, value) => {
+    let error = '';
+
+    if (name === 'identifier') {
+      if (!value.trim()) {
+        error = 'กรุณากรอกชื่อผู้ใช้หรืออีเมล';
+      } else if (!/^[a-zA-Z0-9@.]+$/.test(value)) {
+        error = 'ชื่อผู้ใช้ต้องเป็น A-Z, a-z, 0-9 หรืออีเมลเท่านั้น';
+      }
+    }
+
+    if (name === 'password') {
+      if (!value.trim()) {
+        error = 'กรุณากรอกรหัสผ่าน';
+      } else if (value.length < 6) {
+        error = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+      }
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error,
+    }));
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "identifier") setIdentifier(value);
+    if (name === "password") setPassword(value);
+
+    validateField(name, value); // ✅ ตรวจสอบค่าขณะพิมพ์
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    validateField(name, value); // ✅ ตรวจสอบค่าทันทีที่ออกจากช่อง
+  };
+
   // ✅ ฟังก์ชันตรวจสอบ Validation
   const validateInputs = () => {
     const newErrors = {};
@@ -193,57 +232,82 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-100">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-6 md:px-20 text-center bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen">
-        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden transition-all duration-500">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-6 md:px-20 text-center">
+        {/* ✅ เอฟเฟกต์แสงไฟ */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-purple-500/20 blur-[200px] opacity-40"></div>
+        <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden transition-all duration-500">
 
           {/* LEFT SECTION */}
           <div className='w-full md:w-3/5 p-8 md:p-10'>
             <div className='font-bold text-zinc-800 text-2xl flex justify-center'>
-              <span className="text-zinc-800 tracking-wide">DOG</span>NOSE
+              <span className="text-zinc-800 tracking-wide">DOGNOSE</span>
             </div>
             <div className="border-2 w-12 border-zinc-800 inline-block my-3"></div>
             <h2 className="text-2xl md:text-3xl font-bold text-zinc-800 mb-4 animate-fade-in">
               ลงทะเบียนเข้าสู่ระบบ
             </h2>
+            <p className="text-sm text-gray-600 mb-5 text-center">
+              เข้าสู่ระบบเพื่อเข้าถึงฟีเจอร์พิเศษของ DOGNOSE
+            </p>
 
-            <form onSubmit={handleLoginSubmit} className='flex flex-col items-center space-y-4'>
+            <form onSubmit={handleLoginSubmit} className='flex flex-col items-center text-left space-y-4'>
               {/* Username */}
               <div className="w-full max-w-sm md:w-64 relative">
-                <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.identifier ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
+                <div
+                  className={`relative bg-gray-100 p-2 flex  items-center rounded-md transition-all duration-300 ${errors.identifier ? "border-2 border-red-500" : "focus-within:ring-2 focus-within:ring-zinc-800"
+                    }`}
+                >
                   <FaEnvelope className="text-zinc-500 m-2" />
                   <input
                     type="text"
-                    placeholder="อีเมลหรือชื่อผู้ใช้"
+                    name="identifier"
+                    id="floating_identifier"
+                    placeholder=" "
                     value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    onBlur={validateInputs}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-gray-400 transition-all duration-300 " />
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-transparent peer"
+                  />
+                  <label
+                    htmlFor="floating_identifier"
+                    className="absolute left-10 text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-gray-100 px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-gray-500"
+                  >
+                    ชื่อผู้ใช้หรืออีเมล
+                  </label>
                 </div>
                 {errors.identifier && <p className="text-red-500 text-xs text-left mt-1">{errors.identifier}</p>}
               </div>
 
               {/* Password */}
               <div className="w-full max-w-sm md:w-64 relative">
-                <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.password ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
+                <div className={`relative bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.password ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                   <MdLockOutline className="text-zinc-500 m-2" />
+
                   <input
                     type="password"
-                    placeholder="รหัสผ่าน"
+                    name="password"
+                    id="floating_password"
+                    placeholder=" "
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onBlur={validateInputs}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-gray-400 transition-all duration-300 " />
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-transparent peer"
+                  />
+
+                  <label
+                    htmlFor="floating_password"
+                    className="absolute left-10 text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-gray-100 px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-gray-500"
+                  >
+                    รหัสผ่าน
+                  </label>
                 </div>
                 {errors.password && <p className="text-red-500 text-xs text-left mt-1">{errors.password}</p>}
               </div>
 
               {/* Forgot Password */}
               <div className="flex justify-end w-full md:w-64 mt-2 mb-2">
-                <Link
-                  href="/ForgotPassword"
-                  className="text-xs text-zinc-800 hover:underline"
-                >
+                <Link href="/ForgotPassword" className="text-xs text-zinc-800 hover:underline">
                   ลืมรหัสผ่าน?
                 </Link>
               </div>
@@ -261,25 +325,27 @@ export default function Login() {
                 )}
                 <div className="absolute inset-0 bg-zinc-800 transform scale-0 group-hover:scale-100 transition-all duration-300 rounded-full"></div>
               </button>
+
+              {/* Register Link */}
+              <p className="text-sm text-gray-600 mt-4">
+                ยังไม่มีบัญชี? <Link href="/Register" className="text-blue-600 hover:underline">ลงทะเบียนตอนนี้</Link>
+              </p>
             </form>
           </div>
 
           {/* RIGHT SECTION */}
-          <div className="w-full md:w-2/5 bg-zinc-800 rounded-tl-lg text-white rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500">
+          <div className="w-full md:w-2/5 text-white rounded-tl-lg rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/images/bg-login.png')" }}>
             <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
-              ยินดีต้อนรับ
+              ยินดีต้อนรับกลับ!
             </h2>
             <div className="border-2 w-12 border-white inline-block mb-2"></div>
             <p className="mb-6 md:mb-10 text-sm text-center">
-              กรอกข้อมูลส่วนบุคคลและเริ่มการเดินทางไปกับเรา.
+              เข้าสู่ระบบเพื่อเข้าถึง **การแจ้งเตือนมลพิษ** และ **ระบบวิเคราะห์กลิ่นอัจฉริยะ**
+              ให้ DOGNOSE ดูแลความปลอดภัยของคุณทุกที่ ทุกเวลา
             </p>
-            <Link
-              href="/Register"
-              className="border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800 transition-all duration-300"
-            >
-              สมัครสมาชิก
-            </Link>
           </div>
+
         </div>
       </main>
 

@@ -62,12 +62,12 @@ export default function ForgetPasswordForm() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
 
-
+        <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
             {/* Step 1: ขอ OTP */}
             {step === 1 && (
                 <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center border border-gray-200">
+
                     {/* ไอคอนด้านบน */}
 
                     <div className='flex flex-col items-center'>
@@ -91,64 +91,64 @@ export default function ForgetPasswordForm() {
                     <div className="flex justify-between">
                         <button
                             onClick={() => router.push('/')}
-                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md bg-gray-100 hover:bg-gray-200 transition-all"
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-full bg-gray-100 hover:bg-gray-200 transition-all"
                         >
-                            กลับไปลงชื่อเข้าใช้
+                            กลับไปหน้าล็อคอิน
                         </button>
                         <button
                             onClick={handleRequestOtp}
-                            className="px-4 py-2 text-white bg-zinc-900 rounded-md hover:bg-blue-700 transition-all"
+                            className="relative border-2 border-zinc-800 text-zinc-800 rounded-full px-8  py-2 font-semibold hover:bg-zinc-800 hover:text-white transition-all duration-300 group overflow-hidden shadow-md"
                         >
                             ส่งคำขอ OTP
                         </button>
                     </div>
                 </div>
-
             )}
 
             {/* Step 2: Verify OTP */}
             {step === 2 && (
-                <div className="flex flex-col items-center gap-4 my-4 ">
-                    {/* ไอคอนด้านบน */}
-                    <div className='flex flex-col items-center'>
-                        <img src="/images/OTP.png" alt="OTP Icon" className='w-16 h-16' />
-                        <h2 className='text-xl font-bold mt-3 text-zinc-900'>ยืนยันที่อยู่อีเมลของคุณ</h2>
-                        <p className="text-gray-500 text-sm mt-1">
-                            เราได้ส่งรหัส OTP ไปยังอีเมลของคุณ โปรดกรอกเพื่อดำเนินการต่อ.
-                        </p>
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-900 ">กรอกรหัส OTP</h2>
+                <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center border border-gray-200">
+                    <div className="flex flex-col items-center gap-4 my-4 ">
+                        {/* ไอคอนด้านบน */}
+                        <div className='flex flex-col items-center'>
+                            <img src="/images/OTP.png" alt="OTP Icon" className='w-16 h-16' />
+                            <h2 className='text-xl font-bold mt-3 text-zinc-900'>ยืนยันที่อยู่อีเมลของคุณ</h2>
+                            <p className="text-gray-500 text-sm mt-1">
+                                เราได้ส่งรหัส OTP ไปยังอีเมลของคุณ โปรดกรอกเพื่อดำเนินการต่อ.
+                            </p>
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-900 ">กรอกรหัส OTP</h2>
 
-                    {/* ช่องกรอก OTP 6 หลัก */}
-                    <div className="flex justify-center gap-2 ">
-                        {otp.map((num, index) => (
-                            <input
-                                key={index}
-                                type="text"
-                                maxLength={1}
-                                value={num}
-                                onChange={(e) => {
-                                    const newOtp = [...otp];
-                                    newOtp[index] = e.target.value;
-                                    setOtp(newOtp);
-
-                                    // ✅ เลื่อนโฟกัสไปช่องถัดไปอัตโนมัติ
-                                    if (e.target.value && index < 5) {
-                                        document.getElementById(`otp-${index + 1}`)?.focus();
-                                    }
-                                }}
-                                id={`otp-${index}`}
-                                className="w-12 h-12 border border-gray-300 rounded-lg text-center text-lg font-bold
+                        {/* ช่องกรอก OTP 6 หลัก */}
+                        <div className="flex justify-center gap-2 ">
+                            {otp.map((num, index) => (
+                                <input
+                                    key={index}
+                                    type="text"
+                                    maxLength={1}
+                                    value={num}
+                                    onChange={(e) => {
+                                        const newOtp = [...otp];
+                                        newOtp[index] = e.target.value;
+                                        setOtp(newOtp);
+                                        // ✅ เลื่อนโฟกัสไปช่องถัดไปอัตโนมัติ
+                                        if (e.target.value && index < 5) {
+                                            document.getElementById(`otp-${index + 1}`)?.focus();
+                                        }
+                                    }}
+                                    id={`otp-${index}`}
+                                    className="w-12 h-12 border border-gray-300 rounded-lg text-center text-lg font-bold
                                                focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-300"
-                            />
-                        ))}
+                                />
+                            ))}
+                        </div>
+                        {/* ปุ่มยืนยัน OTP */}
+                        <button
+                            onClick={handleVerifyOtp}
+                            className="mt-5 text-zinc-900 border-2 border-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-900 hover:text-white">
+                            ยืนยัน OTP
+                        </button>
                     </div>
-                    {/* ปุ่มยืนยัน OTP */}
-                    <button
-                        onClick={handleVerifyOtp}
-                        className="mt-5 text-zinc-900 border-2 border-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-900 hover:text-white">
-                        ยืนยัน OTP
-                    </button>
                 </div>
             )}
         </div>

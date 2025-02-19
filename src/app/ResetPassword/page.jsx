@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+        <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
                 <h2 className="text-xl font-bold mb-4">รีเซ็ตรหัสผ่าน</h2>
                 <p className="text-gray-500 text-sm mb-3">
