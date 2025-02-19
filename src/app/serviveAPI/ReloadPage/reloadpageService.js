@@ -56,7 +56,7 @@ export function reloadPage() {
     }
 
     // 🔄 เงื่อนไขที่ 3: ถ้า Access Token หมดอายุ แต่ Refresh Token ยังใช้ได้ → ขอ `new_access_token` จาก API
-    // console.log("🔄 Access Token หมดอายุ → กำลัง Refresh...");
+    console.log("🔄 Access Token หมดอายุ → กำลัง Refresh...");
 
     axios
         .post(
@@ -116,12 +116,14 @@ function showSessionExpiredAlert() {
         confirmButtonText: "เข้าสู่ระบบใหม่",
         allowOutsideClick: false,
     }).then(() => {
-        localStorage.clear();
+        // 🔹 ลบเฉพาะค่าที่เกี่ยวข้องกับเซสชัน
+
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("access_expires_time");
+        localStorage.removeItem("refresh_expires_time");
+        // localStorage.clear();
         window.location.href = "/";
     });
-}
-
-// ✅ ตั้งค่าให้ `reloadPage()` ทำงานอัตโนมัติทุก 1 นาที (เฉพาะบน Browser)
-if (typeof window !== "undefined") {
-    setInterval(reloadPage, 60000);
 }

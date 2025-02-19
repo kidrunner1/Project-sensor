@@ -2,7 +2,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
 // ✅ URL สำหรับการเรียก API ยืนยัน OTP
-const API_URL = `http://${ipconfig.API_HOST}/api/auth/verify-otp`;
+const API_URL = `http://${ipconfig.API_HOST}/api/auth/verify-otp-login`;
 
 // ✅ ฟังก์ชันสำหรับยืนยัน OTP และจัดเก็บ Token
 export async function verifyOtp(userId, otp) {

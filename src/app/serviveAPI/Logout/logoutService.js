@@ -11,13 +11,6 @@ export async function logoutUser() {
     const refreshToken = localStorage.getItem("refresh_token");
     const userId = localStorage.getItem("user_id");
 
-    // if (!userId || !refreshToken) {
-    //     console.error("❌ ไม่พบ `user_id` หรือ `refresh_token` → ผู้ใช้ต้อง Login ใหม่");
-    //     localStorage.clear();
-    //     window.location.href = "/";
-    //     return;
-    // }
-
     console.log("🔹 `user_id` ที่ใช้สำหรับ Logout:", userId);
     console.log("🔹 `access_token` ก่อน Logout:", accessToken);
     console.log("🔹 `refresh_token` ก่อน Logout:", refreshToken);
@@ -47,7 +40,7 @@ export async function logoutUser() {
         const NewAC = localStorage.setItem("new_access_token", newAccessToken); // ✅ บันทึก new_access_token ลง Local Storage
 
         console.log("🔹 user_status:", refreshResponse.data.user_status);
-        console.log("🔹 is_expired (string):", isExpired);
+        console.log("🔹 is_expired (boolean):", isExpired);
         console.log("🔹 is_revoked (boolean):", isRevoked);
         console.log("🔹 new_access_token ที่ได้จาก API:", newAccessToken || "❌ ไม่มี Access Token ใหม่");
         console.log("🔹 revoked_reason:", refreshResponse.data.revoked_reason);
@@ -70,15 +63,19 @@ export async function logoutUser() {
                     icon: "error",
                     confirmButtonText: "ตกลง"
                 });
-                localStorage.clear();
+                // 🔹 ลบเฉพาะค่าที่เกี่ยวข้องกับเซสชัน
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+                localStorage.removeItem("user_id");
+                localStorage.removeItem("access_expires_time");
+                localStorage.removeItem("refresh_expires_time");
+                // localStorage.clear();
                 window.location.href = "/";
                 return;
             }
 
-
             // ✅ บันทึก Access Token ใหม่ลง Local Storage
             localStorage.setItem("access_token", newAccessToken);
-            localStorage.setItem("new_access_token", newAccessToken); // ✅ บันทึก new_access_token เพิ่มเข้าไป
             console.log("✅ อัปเดต new_access_token ใน Local Storage:", newAccessToken);
 
             // ✅ ดึงค่าจาก Local Storage มาใช้ใหม่
@@ -89,7 +86,12 @@ export async function logoutUser() {
         // ❌ ถ้าไม่มี Access Token ใหม่ → อาจต้องให้ผู้ใช้ Login ใหม่
         else {
             console.warn("❌ ไม่มี Access Token ใหม่ → อาจต้องให้ผู้ใช้ Login ใหม่");
-            localStorage.clear();
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("user_id");
+            localStorage.removeItem("access_expires_time");
+            localStorage.removeItem("refresh_expires_time");
+            // localStorage.clear();
             await Swal.fire({
                 title: "เซสชันหมดอายุ",
                 text: "กรุณาเข้าสู่ระบบใหม่",
@@ -133,9 +135,15 @@ export async function logoutUser() {
                     icon: "success",
                     confirmButtonText: "ตกลง"
                 });
+                // 🔹 ลบเฉพาะค่าที่เกี่ยวข้องกับเซสชัน
 
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+                localStorage.removeItem("user_id");
+                localStorage.removeItem("access_expires_time");
+                localStorage.removeItem("refresh_expires_time");
                 // ✅ ล้างข้อมูล Local Storage และ Redirect
-                localStorage.clear();
+                // localStorage.clear();
                 window.location.href = "/";
             } else {
                 throw new Error("❌ Logout failed: Unexpected response.");

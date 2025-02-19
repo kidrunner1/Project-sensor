@@ -2,7 +2,7 @@ import TableData from "@/app/components/homecomponent/Tabledata";
 
 const HomePage = () => {
   return (
-    <div className="flex gap-4 flex-col md:flex-row mx-auto p-4">
+    <div className="flex flex-col md:flex-row  p-4 h-screen overflow-auto">
       {/* Left */}
       <div className="w-full lg:w-1/3 flex flex-col gap-8">MAP</div>
       {/* Right */}

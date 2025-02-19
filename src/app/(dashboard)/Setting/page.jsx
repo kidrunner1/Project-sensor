@@ -18,7 +18,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 mx-auto p-4">
+    <div className="flex flex-col gap-4 p-4">
       {/* Header */}
       <h1 className="text-2xl font-semibold mb-6 text-zinc-600">Settings</h1>
       {/* Tabs */}

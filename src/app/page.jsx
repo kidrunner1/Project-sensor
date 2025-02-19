@@ -33,8 +33,6 @@ export default function Login() {
       if (storedUserId) {
         console.log("✅ พบ `user_id` ใน Local Storage:", storedUserId);
         router.push('/MainDashboard');
-      } else {
-        console.warn("❌ ไม่พบ `user_id` → อาจต้องให้ผู้ใช้ Login ใหม่");
       }
     }
   }, []);
@@ -196,33 +194,23 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-100">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-6 md:px-20 text-center">
-        <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl">
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-6 md:px-20 text-center bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen">
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden transition-all duration-500">
+
           {/* LEFT SECTION */}
-          <div className='w-full md:w-3/5 p-5'>
-            <div className='font-bold text-zinc-800 justify-center'>
-              <span className="text-zinc-800">DOG</span>NOSE
+          <div className='w-full md:w-3/5 p-8 md:p-10'>
+            <div className='font-bold text-zinc-800 text-2xl flex justify-center'>
+              <span className="text-zinc-800 tracking-wide">DOG</span>NOSE
             </div>
-            <div className="border-2 w-10 border-zinc-800 inline-block"></div>
-            <h2 className="text-2xl md:text-3xl font-bold text-zinc-800 mb-2">
+            <div className="border-2 w-12 border-zinc-800 inline-block my-3"></div>
+            <h2 className="text-2xl md:text-3xl font-bold text-zinc-800 mb-4 animate-fade-in">
               ลงทะเบียนเข้าสู่ระบบ
             </h2>
 
-            {/* Social Login
-            <div className="flex justify-center my-4 space-x-3">
-              <button
-                onClick={handleGoogleLogin}
-                className="border-2 rounded-full p-3 bg-black"                 >
-                <FaGoogle className="text-sm text-white" />
-              </button>
-
-            </div> */}
-            <p className="text-zinc-800 my-3">หรือ</p>
-            <form onSubmit={handleLoginSubmit} className='flex flex-col items-center'>
-
+            <form onSubmit={handleLoginSubmit} className='flex flex-col items-center space-y-4'>
               {/* Username */}
-              <div className="w-full max-w-sm md:w-64">
-                <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.identifier ? 'border-2 border-red-500' : ''}`}>
+              <div className="w-full max-w-sm md:w-64 relative">
+                <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.identifier ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                   <FaEnvelope className="text-zinc-500 m-2" />
                   <input
                     type="text"
@@ -230,14 +218,14 @@ export default function Login() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     onBlur={validateInputs}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-gray-400 transition-all duration-300 " />
                 </div>
                 {errors.identifier && <p className="text-red-500 text-xs text-left mt-1">{errors.identifier}</p>}
               </div>
 
               {/* Password */}
-              <div className="w-full max-w-sm mt-2 md:w-64">
-                <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.password ? 'border-2 border-red-500' : ''}`}>
+              <div className="w-full max-w-sm md:w-64 relative">
+                <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.password ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                   <MdLockOutline className="text-zinc-500 m-2" />
                   <input
                     type="password"
@@ -245,43 +233,49 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onBlur={validateInputs}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-gray-400 transition-all duration-300 " />
                 </div>
                 {errors.password && <p className="text-red-500 text-xs text-left mt-1">{errors.password}</p>}
               </div>
 
-
-              <div className="flex justify-end w-full md:w-64 mb-5">
+              {/* Forgot Password */}
+              <div className="flex justify-end w-full md:w-64 mt-2 mb-2">
                 <Link
                   href="/ForgotPassword"
-                  className="text-xs text-zinc-800"
+                  className="text-xs text-zinc-800 hover:underline"
                 >
-                  ลืมรหัสผ่าน
+                  ลืมรหัสผ่าน?
                 </Link>
               </div>
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="border-2 border-zinc-800 text-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-800 hover:text-white">
+                className="relative border-2 border-zinc-800 text-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-800 hover:text-white transition-all duration-300 group overflow-hidden shadow-md"
+              >
                 {loading ? (
                   <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" />
                 ) : (
-                  "เข้าสู่ระบบ"
+                  <span className="relative z-10">เข้าสู่ระบบ</span>
                 )}
+                <div className="absolute inset-0 bg-zinc-800 transform scale-0 group-hover:scale-100 transition-all duration-300 rounded-full"></div>
               </button>
             </form>
           </div>
 
-          {/* Right Section */}
-          <div className="w-full md:w-2/5 bg-zinc-800 rounded-tl-lg text-white rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+          {/* RIGHT SECTION */}
+          <div className="w-full md:w-2/5 bg-zinc-800 rounded-tl-lg text-white rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
               ยินดีต้อนรับ
             </h2>
-            <div className="border-2 w-10 border-white inline-block mb-2"></div>
-            <p className="mb-6 md:mb-10">กรอกข้อมูลส่วนบุคคลและเริ่มการเดินทางไปกับเรา.</p>
+            <div className="border-2 w-12 border-white inline-block mb-2"></div>
+            <p className="mb-6 md:mb-10 text-sm text-center">
+              กรอกข้อมูลส่วนบุคคลและเริ่มการเดินทางไปกับเรา.
+            </p>
             <Link
               href="/Register"
-              className="border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800"
+              className="border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800 transition-all duration-300"
             >
               สมัครสมาชิก
             </Link>

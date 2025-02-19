@@ -83,20 +83,24 @@ const Register = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-6 bg-gray-100">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-4 md:px-20 text-center">
-        <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl">
-          <div className="w-full md:w-3/5 p-5">
-            <div className="font-bold text-zinc-800 justify-center">
-              <span className="text-zinc-800">DOG</span>NOSE
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-4 md:px-20 text-center bg-gradient-to-br from-gray-100 to-gray-300 min-h-screen">
+        <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden transition-all duration-500">
+
+          {/* LEFT SECTION */}
+          <div className="w-full md:w-3/5 p-8 md:p-10">
+            <div className="font-bold text-zinc-800 text-2xl flex justify-center">
+              <span className="text-zinc-800 tracking-wide">DOG</span>NOSE
             </div>
             <div className="py-6 md:py-10">
               <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold text-zinc-800 bg-white">สมัครสมาชิก</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-zinc-800 bg-white animate-fade-in">
+                  สมัครสมาชิก
+                </h2>
                 <div className="border-2 w-10 border-zinc-800 inline-block"></div>
 
                 {/* Username */}
-                <div className="w-full max-w-sm rounded-md">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.username ? 'border-2 border-red-500' : ''}`}>
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.username ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                     <FaUser className="text-zinc-800 m-2" />
                     <input
                       type="text"
@@ -104,65 +108,62 @@ const Register = () => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.username && <p className="text-red-500 text-xs text-left">{errors.username}</p>}
                 </div>
 
                 {/* Email */}
-                <div className="w-full max-w-sm rounded-md">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.email ? 'border-2 border-red-500' : ''}`}>
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.email ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                     <FaEnvelope className="text-zinc-800 m-2" />
                     <input type="email" placeholder="อีเมล" value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.email && <p className="text-red-500 text-xs text-left">{errors.email}</p>}
                 </div>
 
                 {/* Password */}
-                <div className="w-full max-w-sm rounded-md ">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.password ? 'border-2 border-red-500' : ''}`}>
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.password ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                     <MdLockOutline className="text-zinc-800 m-2" />
                     <input type="password" placeholder="รหัสผ่าน" value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.password && <p className="text-red-500 text-xs text-left">{errors.password}</p>}
                 </div>
 
                 {/* Confirm Password */}
-                <div className="w-full max-w-sm rounded-md ">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.confirmPassword ? 'border-2 border-red-500' : ''}`}>
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.confirmPassword ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                     <MdLockOutline className="text-zinc-800 m-2" />
                     <input type="password" placeholder="ยืนยันรหัสผ่าน" value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.confirmPassword && <p className="text-red-500 text-xs text-left">{errors.confirmPassword}</p>}
                 </div>
 
                 {/* Name */}
-                <div className="w-full max-w-sm rounded-md ">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.name ? 'border-2 border-red-500' : ''}`}>
-                    <FaUser className="text-zinc-800 m-2" />
-                    <input
-                      type="text"
-                      placeholder="ชื่อ"
-                      value={name}
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.name ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
+                    <MdLockOutline className="text-zinc-800 m-2" />
+                    <input type="password" placeholder="ชื่อ" value={name}
                       onChange={(e) => setName(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.name && <p className="text-red-500 text-xs text-left">{errors.name}</p>}
                 </div>
 
                 {/* Phone Number */}
-                <div className="w-full max-w-sm ">
-                  <div className={`bg-gray-100 p-2 flex items-center rounded-md ${errors.phoneNumber ? 'border-2 border-red-500' : ''}`}>
+                <div className="w-full max-w-sm relative">
+                  <div className={`bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.phoneNumber ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
                     <IoPhonePortraitOutline className="text-zinc-800 m-2" />
                     <input
                       type="text"
@@ -170,36 +171,42 @@ const Register = () => {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       onBlur={validateForm}
-                      className="bg-gray-100 outline-none text-sm flex-1 text-black" />
+                      className="bg-gray-100 outline-none text-sm flex-1 text-black  transition-all duration-300 " />
                   </div>
                   {errors.phoneNumber && <p className="text-red-500 text-xs text-left">{errors.phoneNumber}</p>}
                 </div>
 
+                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="border-2 border-zinc-800 text-zinc-800 rounded-full px-8 py-2 font-semibold hover:bg-zinc-800 hover:text-white"
-                  disabled={loading}>
+                  className="relative border-2 border-zinc-800 text-zinc-800 rounded-full px-8 py-2 font-semibold hover:bg-zinc-800 hover:text-white transition-all duration-300 group overflow-hidden shadow-md"
+                  disabled={loading}
+                >
                   {loading ? "กำลังสมัครสมาชิก..." : "ลงทะเบียน"}
                 </button>
               </form>
             </div>
           </div>
-          {/* Link Login  */}
-          <div
-            className="w-full md:w-2/5 bg-zinc-800 rounded-tl-lg text-white rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">ยินดีต้อนรับ</h2>
-            <div className="border-2 w-10 border-white inline-block mb-4"></div>
-            <p className="text-sm md:text-base mb-6">หากคุณมีบัญชีอยู่แล้ว.</p>
+
+          {/* RIGHT SECTION */}
+          <div className="w-full md:w-2/5 bg-zinc-800 rounded-tl-lg text-white rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
+              ยินดีต้อนรับ
+            </h2>
+            <div className="border-2 w-12 border-white inline-block mb-2"></div>
+            <p className="mb-6 md:mb-10 text-sm text-center">
+              หากคุณมีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ
+            </p>
             <Link
               href="/"
-              className="border-2 border-white rounded-full px-6 py-2 font-semibold hover:bg-white hover:text-zinc-800"
+              className="border-2 border-white rounded-full px-8 py-2 font-semibold hover:bg-white hover:text-zinc-800 transition-all duration-300"
             >
               เข้าสู่ระบบ
             </Link>
           </div>
         </div>
       </main>
+
     </div>
   );
 };
