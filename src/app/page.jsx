@@ -8,13 +8,11 @@ import Link from 'next/link';
 import { FaEnvelope, FaGoogle } from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 import dynamic from 'next/dynamic';
+import InputField from './components/InputField';
 
 // ✅ โหลด Lottie JSON เมื่อใช้ Client-Side เท่านั้น
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import loadingAnimation from '@/app/animations/loading.json';
-
-
-
 
 export default function Login() {
   const [identifier, setIdentifier] = useState('');
@@ -201,15 +199,30 @@ export default function Login() {
         localStorage.setItem('access_expires_time', otpResponse.access_expires_time);
         localStorage.setItem('refresh_expires_time', otpResponse.refresh_expires_time);
 
-        Swal.fire({
-          title: 'ยืนยัน OTP สำเร็จ!',
-          text: 'กำลังนำคุณไปยังแดชบอร์ด...',
-          icon: 'success',
-          confirmButtonText: 'ตกลง'
-        }).then(() => {
-          router.push('/MainDashboard');
-        });
+        if (otpResponse.company_id) {
+          console.log("✅ มี Company ID:", otpResponse.company_id);
+          localStorage.setItem("company_id", otpResponse.company_id);
 
+          Swal.fire({
+            title: 'ยืนยัน OTP สำเร็จ!',
+            text: 'กำลังนำคุณไปยังแดชบอร์ด...',
+            icon: 'success',
+            confirmButtonText: 'ตกลง'
+          }).then(() => {
+            router.push('/MainDashboard');
+          });
+
+        } else {
+          console.warn("❌ ยังไม่มี Company ID, ต้องให้ผู้ใช้เพิ่มก่อน");
+          Swal.fire({
+            title: "เพิ่ม Company ID ก่อนเข้าใช้งาน!",
+            text: "คุณต้องเพิ่ม Company ID ก่อนเข้าสู่ระบบ",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          }).then(() => {
+            router.push("/AddCompanyID"); // นำไปที่หน้าเพิ่ม Company ID
+          });
+        }
       } else {
         console.warn("❌ OTP ไม่ถูกต้อง:", otpResponse?.message);
         Swal.fire({
@@ -251,61 +264,11 @@ export default function Login() {
               เข้าสู่ระบบเพื่อเข้าถึงฟีเจอร์พิเศษของ DOGNOSE
             </p>
 
-            <form onSubmit={handleLoginSubmit} className='flex flex-col items-center text-left space-y-4'>
-              {/* Username */}
-              <div className="w-full max-w-sm md:w-64 relative">
-                <div
-                  className={`relative bg-gray-100 p-2 flex  items-center rounded-md transition-all duration-300 ${errors.identifier ? "border-2 border-red-500" : "focus-within:ring-2 focus-within:ring-zinc-800"
-                    }`}
-                >
-                  <FaEnvelope className="text-zinc-500 m-2" />
-                  <input
-                    type="text"
-                    name="identifier"
-                    id="floating_identifier"
-                    placeholder=" "
-                    value={identifier}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-transparent peer"
-                  />
-                  <label
-                    htmlFor="floating_identifier"
-                    className="absolute left-10 text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-gray-100 px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-gray-500"
-                  >
-                    ชื่อผู้ใช้หรืออีเมล
-                  </label>
-                </div>
-                {errors.identifier && <p className="text-red-500 text-xs text-left mt-1">{errors.identifier}</p>}
-              </div>
+            {/* Login Form */}
+            <form onSubmit={handleLoginSubmit} className="flex flex-col items-center text-left space-y-4">
+              <InputField type="text" name="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="ชื่อผู้ใช้หรืออีเมล" icon={FaEnvelope} error={errors.identifier} />
+              <InputField type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="รหัสผ่าน" icon={MdLockOutline} error={errors.password} />
 
-              {/* Password */}
-              <div className="w-full max-w-sm md:w-64 relative">
-                <div className={`relative bg-gray-100 p-2 flex items-center rounded-md transition-all duration-300 ${errors.password ? 'border-2 border-red-500' : 'focus-within:ring-2 focus-within:ring-zinc-800'}`}>
-                  <MdLockOutline className="text-zinc-500 m-2" />
-
-                  <input
-                    type="password"
-                    name="password"
-                    id="floating_password"
-                    placeholder=" "
-                    value={password}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-transparent peer"
-                  />
-
-                  <label
-                    htmlFor="floating_password"
-                    className="absolute left-10 text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-gray-100 px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-gray-500"
-                  >
-                    รหัสผ่าน
-                  </label>
-                </div>
-                {errors.password && <p className="text-red-500 text-xs text-left mt-1">{errors.password}</p>}
-              </div>
-
-              {/* Forgot Password */}
               <div className="flex justify-end w-full md:w-64 mt-2 mb-2">
                 <Link href="/ForgotPassword" className="text-xs text-zinc-800 hover:underline">
                   ลืมรหัสผ่าน?
@@ -313,16 +276,8 @@ export default function Login() {
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="relative border-2 border-zinc-800 text-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-800 hover:text-white transition-all duration-300 group overflow-hidden shadow-md"
-              >
-                {loading ? (
-                  <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" />
-                ) : (
-                  <span className="relative z-10">เข้าสู่ระบบ</span>
-                )}
+              <button type="submit" disabled={loading} className="relative border-2 border-zinc-800 text-zinc-800 rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-zinc-800 hover:text-white transition-all duration-300 group overflow-hidden shadow-md">
+                {loading ? <Lottie animationData={loadingAnimation} loop={true} className="w-8 h-8" /> : <span className="relative z-10">เข้าสู่ระบบ</span>}
                 <div className="absolute inset-0 bg-zinc-800 transform scale-0 group-hover:scale-100 transition-all duration-300 rounded-full"></div>
               </button>
 
@@ -385,7 +340,3 @@ export default function Login() {
     </div>
   );
 }
-
-
-
-

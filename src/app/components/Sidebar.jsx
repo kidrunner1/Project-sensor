@@ -22,7 +22,7 @@ const menuItems = [
         subItems: [
           { label: "Overview", url: "/MainDashboard" },
           { label: "Analytics", url: "/Analytics" },
-          { label: "Reports", url: "/Setting" },
+          { label: "Reports", url: "/AddCompanyID" },
         ],
       },
       {
