@@ -117,7 +117,7 @@ function showSessionExpiredAlert() {
         allowOutsideClick: false,
     }).then(() => {
         // 🔹 ลบเฉพาะค่าที่เกี่ยวข้องกับเซสชัน
-
+        localStorage.removeItem("company_id")
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user_id");

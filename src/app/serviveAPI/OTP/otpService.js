@@ -16,7 +16,16 @@ export async function verifyOtp(userId, otp) {
         const response = await axios.post(API_URL, otpData);
 
         // ✅ ดึงข้อมูลจาก Response
-        const { access_token, refresh_token, access_expires_time, refresh_expires_time, message, roles } = response.data;
+        const {
+            access_token,
+            refresh_token,
+            access_expires_time,
+            refresh_expires_time,
+            message,
+            roles,
+            company_exist,
+            company_id
+        } = response.data;
 
         console.log("📌 API Response จาก Verify OTP:", JSON.stringify(response.data, null, 2));
 
@@ -31,7 +40,19 @@ export async function verifyOtp(userId, otp) {
         localStorage.setItem("access_expires_time", access_expires_time);
         localStorage.setItem("refresh_expires_time", refresh_expires_time);
         localStorage.setItem("roles", JSON.stringify(roles));
-        localStorage.setItem("new_access_token", null);
+
+        // ✅ ตรวจสอบ `company_exist` และ `company_id` ก่อนบันทึก
+        console.log("📌 ตรวจสอบ company_exist:", company_exist);
+        console.log("📌 ตรวจสอบ company_id:", company_id);
+
+        if (company_exist && company_id) {
+            localStorage.setItem("company_id", company_id);
+            console.log("✅ Company ID saved:", company_id);
+        } else {
+            console.warn("🚨 No valid Company ID found! Removing from LocalStorage.");
+            localStorage.removeItem("company_id");
+        }
+
         console.log("🔐 Token & User ID saved successfully!");
 
         return {
@@ -42,7 +63,9 @@ export async function verifyOtp(userId, otp) {
             refresh_token,
             access_expires_time,
             refresh_expires_time,
-            roles
+            roles,
+            company_exist,
+            company_id
         };
     } catch (error) {
         // ❌ จัดการข้อผิดพลาด

@@ -38,6 +38,7 @@ const HomePageTest = () => {
     localStorage.removeItem("token_expiry");
     localStorage.removeItem("userId");
     localStorage.removeItem("userName");
+    localStorage.removeItem("company_id")
     router.push("/");
   };
 

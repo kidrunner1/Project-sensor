@@ -12,7 +12,10 @@ const AddCompanyID = () => {
 
   useEffect(() => {
     const storedCompanyId = localStorage.getItem("company_id");
+    console.log("🔍 LocalStorage company_id ก่อนเริ่มหน้า:", storedCompanyId);
+
     if (storedCompanyId) {
+      console.log("✅ พบ Company ID ใน LocalStorage กำลัง Redirect...");
       router.push("/MainDashboard"); // ถ้ามี Company ID แล้ว ส่งไปที่ Dashboard ทันที
     }
   }, []);
@@ -29,11 +32,21 @@ const AddCompanyID = () => {
         throw new Error("⚠️ ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
       }
 
-      // ✅ เรียก API เพื่อ Add Company ID
-      await addCompanyId(userId, companyID, accessToken, refreshToken);
+      console.log("📌 กำลังส่ง API Add Company ID:", { userId, companyID, accessToken });
 
-      // ✅ บันทึก Company ID ลง LocalStorage
-      localStorage.setItem("company_id", companyID);
+      // ✅ เรียก API เพื่อ Add Company ID
+      const response = await addCompanyId(userId, companyID, accessToken, refreshToken);
+
+      console.log("✅ API Response:", response);
+
+      if (response?.company_id) {
+        // ✅ บันทึก Company ID ลง LocalStorage
+        localStorage.setItem("company_id", response.company_id);
+        console.log("✅ บันทึก Company ID ลง LocalStorage:", response.company_id);
+      } else {
+        console.warn("🚨 API ไม่ได้ส่ง company_id กลับมา! อาจเกิดปัญหาฝั่ง Backend");
+        throw new Error("API ไม่ได้ส่ง Company ID กลับมา");
+      }
 
       // ✅ แจ้งเตือนสำเร็จ
       Swal.fire({
@@ -42,9 +55,12 @@ const AddCompanyID = () => {
         icon: "success",
         confirmButtonText: "ตกลง",
       }).then(() => {
+        console.log("🔄 กำลัง Redirect ไป MainDashboard...");
         router.push("/MainDashboard"); // ✅ ไปที่ Dashboard
       });
+
     } catch (error) {
+      console.error("❌ เพิ่ม Company ID ไม่สำเร็จ:", error);
       Swal.fire({
         title: "❌ เพิ่ม Company ID ไม่สำเร็จ",
         text: error.message || "กรุณาลองอีกครั้ง",

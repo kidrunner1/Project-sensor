@@ -12,6 +12,13 @@ const ADD_COMPANY_ID_API = `http://${ipconfig.API_HOST}/api/auth/add-company-id`
  */
 export const addCompanyId = async (userId, companyId, accessToken, refreshToken) => {
   try {
+    console.log("🚀 เรียก API Add Company ID...");
+    console.log("🔹 `user_id`:", userId);
+    console.log("🔹 `company_id`:", companyId);
+    console.log("🔹 `access_token` ก่อนส่ง:", accessToken);
+    console.log("🔹 `refresh_token` ที่ใช้ใน Header:", refreshToken);
+
+    // ✅ เรียก API `add-company-id`
     const response = await axios.post(
       ADD_COMPANY_ID_API,
       {
@@ -27,9 +34,23 @@ export const addCompanyId = async (userId, companyId, accessToken, refreshToken)
       }
     );
 
-    return response.data; // ส่งข้อมูลที่ได้กลับไป
+    console.log("✅ API Response:", response.data);
+
+    // ✅ ตรวจสอบว่ามี `new_access_token` ส่งกลับมาหรือไม่
+    const newAccessToken = response.data.new_access_token || accessToken;
+    const companyIdFromAPI = response.data.company_id || companyId;
+
+    console.log("🔹 `new_access_token` ที่ได้จาก API:", newAccessToken || "❌ ไม่มีการอัปเดต Access Token");
+    console.log("🔹 `company_id` ที่ได้รับ:", companyIdFromAPI);
+
+    // ✅ อัปเดตค่าใน Local Storage
+    localStorage.setItem("access_token", newAccessToken);
+    localStorage.setItem("company_id", companyIdFromAPI);
+    console.log("✅ บันทึก Access Token และ Company ID ลง Local Storage สำเร็จ!");
+
+    return response.data;
   } catch (error) {
-    console.error("Error adding company ID:", error.response?.data || error.message);
+    console.error("❌ Error adding company ID:", error.response?.data || error.message);
     throw error.response?.data || { message: "Failed to add company ID" };
   }
 };

@@ -35,44 +35,44 @@ export default function Login() {
     }
   }, []);
 
-  // ✅ ตรวจสอบค่าของแต่ละช่องแบบเรียลไทม์
-  const validateField = (name, value) => {
-    let error = '';
+  // // ✅ ตรวจสอบค่าของแต่ละช่องแบบเรียลไทม์
+  // const validateField = (name, value) => {
+  //   let error = '';
 
-    if (name === 'identifier') {
-      if (!value.trim()) {
-        error = 'กรุณากรอกชื่อผู้ใช้หรืออีเมล';
-      } else if (!/^[a-zA-Z0-9@.]+$/.test(value)) {
-        error = 'ชื่อผู้ใช้ต้องเป็น A-Z, a-z, 0-9 หรืออีเมลเท่านั้น';
-      }
-    }
+  //   if (name === 'identifier') {
+  //     if (!value.trim()) {
+  //       error = 'กรุณากรอกชื่อผู้ใช้หรืออีเมล';
+  //     } else if (!/^[a-zA-Z0-9@.]+$/.test(value)) {
+  //       error = 'ชื่อผู้ใช้ต้องเป็น A-Z, a-z, 0-9 หรืออีเมลเท่านั้น';
+  //     }
+  //   }
 
-    if (name === 'password') {
-      if (!value.trim()) {
-        error = 'กรุณากรอกรหัสผ่าน';
-      } else if (value.length < 6) {
-        error = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-      }
-    }
+  //   if (name === 'password') {
+  //     if (!value.trim()) {
+  //       error = 'กรุณากรอกรหัสผ่าน';
+  //     } else if (value.length < 6) {
+  //       error = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+  //     }
+  //   }
 
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: error,
-    }));
-  };
+  //   setErrors((prevErrors) => ({
+  //     ...prevErrors,
+  //     [name]: error,
+  //   }));
+  // };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "identifier") setIdentifier(value);
-    if (name === "password") setPassword(value);
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   if (name === "identifier") setIdentifier(value);
+  //   if (name === "password") setPassword(value);
 
-    validateField(name, value); // ✅ ตรวจสอบค่าขณะพิมพ์
-  };
+  //   validateField(name, value); // ✅ ตรวจสอบค่าขณะพิมพ์
+  // };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    validateField(name, value); // ✅ ตรวจสอบค่าทันทีที่ออกจากช่อง
-  };
+  // const handleBlur = (e) => {
+  //   const { name, value } = e.target;
+  //   validateField(name, value); // ✅ ตรวจสอบค่าทันทีที่ออกจากช่อง
+  // };
 
   // ✅ ฟังก์ชันตรวจสอบ Validation
   const validateInputs = () => {
@@ -167,51 +167,61 @@ export default function Login() {
     }
   };
 
-  // ฟังก์ชันส่ง OTP ไปตรวจสอบ
   const handleOtpSubmit = async () => {
     const otpString = otp.join(""); // ✅ แปลงจากอาร์เรย์เป็นสตริง
-
+  
     if (!otpString || !userId) {
       Swal.fire({
-        title: 'กรุณากรอก OTP ของท่าน เพื่อทำการยืนยันตัวตน',
-        text: 'OTP ไม่สามารถว่างได้',
-        icon: 'warning',
-        confirmButtonText: 'ตกลง'
+        title: "กรุณากรอก OTP ของท่าน เพื่อทำการยืนยันตัวตน",
+        text: "OTP ไม่สามารถว่างได้",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
       });
       return;
     }
-
+  
     try {
       console.log("🔹 ส่งค่าไปยัง API Verify OTP:", { userId, otpString });
-
+  
       const otpResponse = await verifyOtp(userId, otpString); // ✅ ส่ง OTP ที่แปลงเป็น String
-
+  
       console.log("📌 OTP API Response:", otpResponse);
-
+  
       if (otpResponse?.message.toLowerCase().includes("otp verified")) {
         const finalUserId = otpResponse.user_id || userId;
         console.log("✅ บันทึก user_id ลง Local Storage:", finalUserId);
-
+  
         // ✅ บันทึกข้อมูลลง Local Storage
-        localStorage.setItem('user_id', finalUserId);
-        localStorage.setItem('access_token', otpResponse.access_token);
-        localStorage.setItem('refresh_token', otpResponse.refresh_token);
-        localStorage.setItem('access_expires_time', otpResponse.access_expires_time);
-        localStorage.setItem('refresh_expires_time', otpResponse.refresh_expires_time);
-
-        if (otpResponse.company_id) {
+        localStorage.setItem("user_id", finalUserId);
+        localStorage.setItem("access_token", otpResponse.access_token);
+        localStorage.setItem("refresh_token", otpResponse.refresh_token);
+        localStorage.setItem("access_expires_time", otpResponse.access_expires_time);
+        localStorage.setItem("refresh_expires_time", otpResponse.refresh_expires_time);
+        localStorage.setItem("roles", JSON.stringify(otpResponse.roles));
+  
+        // ✅ ตรวจสอบว่า company_id มีค่าหรือไม่ก่อนบันทึก
+        if (otpResponse.company_exist && otpResponse.company_id) {
           console.log("✅ มี Company ID:", otpResponse.company_id);
           localStorage.setItem("company_id", otpResponse.company_id);
-
+        } else {
+          console.warn("🚨 ไม่มี Company ID! ลบค่าที่มีอยู่ใน LocalStorage");
+          localStorage.removeItem("company_id"); // ❌ ลบค่าเก่าถ้ามีปัญหา
+        }
+  
+        // ✅ ตรวจสอบค่าที่ถูกบันทึกใน LocalStorage
+        console.log("🔍 LocalStorage company_id:", localStorage.getItem("company_id"));
+  
+        // ✅ ถ้ามี Company ID ให้ไปที่ Dashboard
+        if (otpResponse.company_exist) {
           Swal.fire({
-            title: 'ยืนยัน OTP สำเร็จ!',
-            text: 'กำลังนำคุณไปยังแดชบอร์ด...',
-            icon: 'success',
-            confirmButtonText: 'ตกลง'
+            title: "ยืนยัน OTP สำเร็จ!",
+            text: "กำลังนำคุณไปยังแดชบอร์ด...",
+            icon: "success",
+            confirmButtonText: "ตกลง",
           }).then(() => {
-            router.push('/MainDashboard');
+            router.push("/MainDashboard");
           });
-
+  
         } else {
           console.warn("❌ ยังไม่มี Company ID, ต้องให้ผู้ใช้เพิ่มก่อน");
           Swal.fire({
@@ -220,29 +230,28 @@ export default function Login() {
             icon: "warning",
             confirmButtonText: "ตกลง",
           }).then(() => {
-            router.push("/AddCompanyID"); // นำไปที่หน้าเพิ่ม Company ID
+            router.push("/AddCompanyID"); // ✅ เปลี่ยนเส้นทางให้ตรงกับ Route ของคุณ
           });
         }
       } else {
         console.warn("❌ OTP ไม่ถูกต้อง:", otpResponse?.message);
         Swal.fire({
-          title: 'OTP ไม่ถูกต้อง',
-          text: otpResponse?.message || 'กรุณาตรวจสอบ OTP อีกครั้ง',
-          icon: 'error',
-          confirmButtonText: 'ตกลง'
+          title: "OTP ไม่ถูกต้อง",
+          text: otpResponse?.message || "กรุณาตรวจสอบ OTP อีกครั้ง",
+          icon: "error",
+          confirmButtonText: "ตกลง",
         });
       }
-
     } catch (error) {
       console.error("❌ เกิดข้อผิดพลาดในการยืนยัน OTP:", error);
       Swal.fire({
-        title: 'เกิดข้อผิดพลาด',
-        text: error.message || 'ไม่สามารถยืนยัน OTP ได้',
-        icon: 'error',
-        confirmButtonText: 'ตกลง'
+        title: "เกิดข้อผิดพลาด",
+        text: error.message || "ไม่สามารถยืนยัน OTP ได้",
+        icon: "error",
+        confirmButtonText: "ตกลง",
       });
     }
-  };
+  };  
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
