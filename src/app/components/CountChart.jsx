@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import Image from "next/image";
-import { fetchWeather } from "../weatherService";  // Make sure this function handles errors properly
+import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService";  // Make sure this function handles errors properly
 
 const CountChart = () => {
   const [weatherData, setWeatherData] = useState(null);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchWeather } from "../weatherService"; // Assuming your fetchWeather is in weatherService.js
+import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService"; // Assuming your fetchWeather is in weatherService.js
 
 const ExportData = ({ name, location }) => {
   const [data, setData] = useState([]); // State to hold weather data

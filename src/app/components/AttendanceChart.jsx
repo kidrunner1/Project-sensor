@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { fetchWeather } from "../weatherService"; // ดึงข้อมูล API
+import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService"; // ดึงข้อมูล API
 
 const AttendanceChart = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState("24h");

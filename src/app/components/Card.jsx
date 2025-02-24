@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { fetchWeather } from "../weatherService"; // ดึงข้อมูล API
+import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService"; // ดึงข้อมูล API
 
 const Card = ({ type, int }) => {
   const [weatherData, setWeatherData] = useState(null);

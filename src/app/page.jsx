@@ -169,7 +169,7 @@ export default function Login() {
 
   const handleOtpSubmit = async () => {
     const otpString = otp.join(""); // ✅ แปลงจากอาร์เรย์เป็นสตริง
-  
+
     if (!otpString || !userId) {
       Swal.fire({
         title: "กรุณากรอก OTP ของท่าน เพื่อทำการยืนยันตัวตน",
@@ -179,18 +179,18 @@ export default function Login() {
       });
       return;
     }
-  
+
     try {
       console.log("🔹 ส่งค่าไปยัง API Verify OTP:", { userId, otpString });
-  
+
       const otpResponse = await verifyOtp(userId, otpString); // ✅ ส่ง OTP ที่แปลงเป็น String
-  
+
       console.log("📌 OTP API Response:", otpResponse);
-  
+
       if (otpResponse?.message.toLowerCase().includes("otp verified")) {
         const finalUserId = otpResponse.user_id || userId;
         console.log("✅ บันทึก user_id ลง Local Storage:", finalUserId);
-  
+
         // ✅ บันทึกข้อมูลลง Local Storage
         localStorage.setItem("user_id", finalUserId);
         localStorage.setItem("access_token", otpResponse.access_token);
@@ -198,7 +198,7 @@ export default function Login() {
         localStorage.setItem("access_expires_time", otpResponse.access_expires_time);
         localStorage.setItem("refresh_expires_time", otpResponse.refresh_expires_time);
         localStorage.setItem("roles", JSON.stringify(otpResponse.roles));
-  
+
         // ✅ ตรวจสอบว่า company_id มีค่าหรือไม่ก่อนบันทึก
         if (otpResponse.company_exist && otpResponse.company_id) {
           console.log("✅ มี Company ID:", otpResponse.company_id);
@@ -207,10 +207,10 @@ export default function Login() {
           console.warn("🚨 ไม่มี Company ID! ลบค่าที่มีอยู่ใน LocalStorage");
           localStorage.removeItem("company_id"); // ❌ ลบค่าเก่าถ้ามีปัญหา
         }
-  
+
         // ✅ ตรวจสอบค่าที่ถูกบันทึกใน LocalStorage
         console.log("🔍 LocalStorage company_id:", localStorage.getItem("company_id"));
-  
+
         // ✅ ถ้ามี Company ID ให้ไปที่ Dashboard
         if (otpResponse.company_exist) {
           Swal.fire({
@@ -221,7 +221,7 @@ export default function Login() {
           }).then(() => {
             router.push("/MainDashboard");
           });
-  
+
         } else {
           console.warn("❌ ยังไม่มี Company ID, ต้องให้ผู้ใช้เพิ่มก่อน");
           Swal.fire({
@@ -251,7 +251,7 @@ export default function Login() {
         confirmButtonText: "ตกลง",
       });
     }
-  };  
+  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
@@ -259,7 +259,6 @@ export default function Login() {
         {/* ✅ เอฟเฟกต์แสงไฟ */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-purple-500/20 blur-[200px] opacity-40"></div>
         <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-4xl overflow-hidden transition-all duration-500">
-
           {/* LEFT SECTION */}
           <div className='w-full md:w-3/5 p-8 md:p-10'>
             <div className='font-bold text-zinc-800 text-2xl flex justify-center'>
@@ -275,9 +274,26 @@ export default function Login() {
 
             {/* Login Form */}
             <form onSubmit={handleLoginSubmit} className="flex flex-col items-center text-left space-y-4">
-              <InputField type="text" name="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="ชื่อผู้ใช้หรืออีเมล" icon={FaEnvelope} error={errors.identifier} />
-              <InputField type="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="รหัสผ่าน" icon={MdLockOutline} error={errors.password} />
-
+              <InputField
+                type="text"
+                name="identifier"
+                value={identifier}
+                onChange={(e) =>
+                  setIdentifier(e.target.value)}
+                placeholder="ชื่อผู้ใช้หรืออีเมล"
+                icon={FaEnvelope}
+                error={errors.identifier}
+              />
+              <InputField
+                type="password"
+                name="password"
+                value={password}
+                onChange={(e) =>
+                  setPassword(e.target.value)}
+                placeholder="รหัสผ่าน"
+                icon={MdLockOutline}
+                error={errors.password}
+              />
               <div className="flex justify-end w-full md:w-64 mt-2 mb-2">
                 <Link href="/ForgotPassword" className="text-xs text-zinc-800 hover:underline">
                   ลืมรหัสผ่าน?
@@ -309,7 +325,6 @@ export default function Login() {
               ให้ DOGNOSE ดูแลความปลอดภัยของคุณทุกที่ ทุกเวลา
             </p>
           </div>
-
         </div>
       </main>
 
