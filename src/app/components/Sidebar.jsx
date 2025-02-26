@@ -1,32 +1,34 @@
+"use client";
+
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import "@fortawesome/fontawesome-free/css/all.min.css";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { FaHome, FaChartBar, FaCogs, FaTasks } from "react-icons/fa";
 
+// ✅ รายการเมนู Sidebar
 const menuItems = [
   {
     title: "MENU",
     items: [
       {
-        icon: "/images/home.png",
+        icon: <FaHome />,
         label: "Home",
         url: "/Home",
         hasDropdown: false,
       },
       {
-        icon: "/images/assignment.png",
+        icon: <FaChartBar />,
         label: "Dashboard",
         url: "#",
         hasDropdown: true,
         subItems: [
           { label: "Overview", url: "/MainDashboard" },
-          { label: "Analytics", url: "/Analytics" },
-          { label: "Reports", url: "/AddCompanyID" },
+          { label: "Live Network", url: "/Analytics" },
+          { label: "To-Do’s", url: "/Todos" },
         ],
       },
       {
-        icon: "/images/setting.png",
+        icon: <FaCogs />,
         label: "Setting",
         url: "/Setting",
         hasDropdown: false,
@@ -37,8 +39,9 @@ const menuItems = [
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [openDropdown, setOpenDropdown] = useState(null); // ควบคุม Dropdown
+  const [openDropdown, setOpenDropdown] = useState(null);
 
+  // ✅ เปิด-ปิด Dropdown
   const toggleDropdown = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
   };
@@ -47,8 +50,8 @@ const Sidebar = () => {
     <div className="flex">
       {/* Sidebar Container */}
       <div
-        className={`h-screen bg-zinc-900 p-5 pt-8 relative duration-300 ${
-          isOpen ? "w-56" : "w-20"
+        className={`h-screen bg-gray-900 p-5 pt-8 relative duration-300 ${
+          isOpen ? "w-60" : "w-20"
         }`}
       >
         {/* ปุ่ม Toggle */}
@@ -79,18 +82,16 @@ const Sidebar = () => {
                       onClick={() => toggleDropdown(index)}
                       className={`flex items-center ${
                         isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 hover:text-white w-full ${
-                        openDropdown === index ? "bg-gray-800 text-white" : ""
+                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full ${
+                        openDropdown === index ? "bg-gray-800" : ""
                       }`}
                     >
-                      <Image src={item.icon} alt={item.label} width={20} height={20} />
+                      {item.icon}
                       {isOpen && <span>{item.label}</span>}
                       {isOpen && (
-                        <i
-                          className={`fas fa-chevron-down transition-transform duration-300 ${
-                            openDropdown === index ? "rotate-180" : ""
-                          }`}
-                        ></i>
+                        <span className={`ml-auto transition-transform ${openDropdown === index ? "rotate-180" : ""}`}>
+                          ▼
+                        </span>
                       )}
                     </button>
                   ) : (
@@ -99,9 +100,9 @@ const Sidebar = () => {
                       href={item.url}
                       className={`flex items-center ${
                         isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 hover:text-white w-full`}
+                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full`}
                     >
-                      <Image src={item.icon} alt={item.label} width={20} height={20} />
+                      {item.icon}
                       {isOpen && <span>{item.label}</span>}
                     </Link>
                   )}

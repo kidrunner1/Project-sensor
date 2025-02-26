@@ -168,146 +168,6 @@
 // }
 
 // ✅ ตรวจสอบการ Logout และ Refresh Token ของผู้ใช้
-// import ipconfig from "@/app/ipconfig";
-// import Swal from "sweetalert2";
-
-// // ✅ URL API
-// const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
-// const LOGOUT_API = `http://${ipconfig.API_HOST}/api/auth/logout`;
-
-// export async function logoutUser() {
-//     let accessToken = localStorage.getItem("access_token");
-//     const refreshToken = localStorage.getItem("refresh_token");
-//     const userId = localStorage.getItem("user_id");
-
-//     console.log("🔹 `user_id` ที่ใช้สำหรับ Logout:", userId);
-//     console.log("🔹 `access_token` ก่อน Logout:", accessToken);
-//     console.log("🔹 `refresh_token` ก่อน Logout:", refreshToken);
-
-//     try {
-//         console.log("🔄 กำลังตรวจสอบ Access Token...");
-
-//         let newAccessToken = null;
-//         const refreshResponse = await fetch(REFRESH_API, {
-//             method: "POST",
-//             headers: {
-//                 Authorization: `Bearer ${refreshToken}`,
-//                 "Content-Type": "application/json"
-//             },
-//             body: JSON.stringify({
-//                 user_id: userId,
-//                 access_token: accessToken
-//             })
-//         });
-
-//         if (!refreshResponse.ok) {
-//             console.error(`❌ Refresh Token API Error: ${refreshResponse.status}`);
-//             return;
-//         }
-
-//         const refreshData = await refreshResponse.json();
-//         console.log("🔄 ✅ Refresh Token Response:", refreshData);
-
-//         const isExpired = refreshData?.is_expired ? String(refreshData.is_expired) : "false";
-//         const isRevoked = refreshData?.is_revoked ? !!refreshData.is_revoked : false;
-
-//         localStorage.setItem("new_access_token", newAccessToken);
-//         console.log("🔹 user_status:", refreshData.user_status);
-//         console.log("🔹 is_expired (boolean):", isExpired);
-//         console.log("🔹 is_revoked (boolean):", isRevoked);
-//         console.log("🔹 new_access_token ที่ได้รับ:", newAccessToken);
-
-//         if (refreshData.user_status === "online" && isExpired === "false") {
-//             console.log("✅ Access Token ปัจจุบันยังใช้งานได้ → ใช้ทำ Logout");
-//             accessToken = localStorage.getItem("access_token");
-//         } else if (isExpired === "true" && isRevoked && newAccessToken) {
-//             if (newAccessToken === refreshToken) {
-//                 console.error("❌ new_access_token ที่ได้รับมาเป็น refresh_token ซึ่งผิดพลาด!");
-//                 clearSession();
-//                 return;
-//             }
-//             localStorage.setItem("access_token", newAccessToken);
-//             console.log("✅ อัปเดต new_access_token ใน Local Storage:", newAccessToken);
-//             accessToken = newAccessToken;
-//         } else {
-//             console.warn("❌ ไม่มี Access Token ใหม่ → อาจต้องให้ผู้ใช้ Login ใหม่");
-//             clearSession();
-//             await Swal.fire({
-//                 title: "เซสชันหมดอายุ",
-//                 text: "กรุณาเข้าสู่ระบบใหม่",
-//                 icon: "warning",
-//                 confirmButtonText: "ตกลง"
-//             });
-//             return;
-//         }
-
-//         console.log("🚀 เตรียมส่งคำขอ Logout...");
-//         console.log("🔹 `user_id` ที่จะใช้:", userId);
-//         console.log("🔹 `access_token` ที่จะใช้:", accessToken);
-
-//         try {
-//             const logoutResponse = await fetch(LOGOUT_API, {
-//                 method: "POST",
-//                 headers: {
-//                     Authorization: `${accessToken}`,
-//                     "Content-Type": "application/json"
-//                 },
-//                 body: JSON.stringify({ user_id: userId })
-//             });
-
-//             if (!logoutResponse.ok) {
-//                 console.error(`❌ Logout API Error: ${logoutResponse.status}`);
-//                 return;
-//             }
-
-//             console.log("✅ Logout API Response:", await logoutResponse.json());
-
-//             // ✅ ออกจากระบบสำเร็จ → เคลียร์ Local Storage
-//             clearSession();
-
-//             await Swal.fire({
-//                 title: "ออกจากระบบสำเร็จ!",
-//                 icon: "success",
-//                 confirmButtonText: "ตกลง"
-//             });
-
-//         } catch (logoutError) {
-//             console.error("❌ Logout API Error:", logoutError);
-//             await Swal.fire({
-//                 title: "เกิดข้อผิดพลาด",
-//                 text: "ไม่สามารถออกจากระบบได้ กรุณาลองใหม่",
-//                 icon: "error",
-//                 confirmButtonText: "ตกลง"
-//             });
-//         }
-//     } catch (error) {
-//         console.error("❌ Error refreshing Access Token:", error);
-//         await Swal.fire({
-//             title: "เกิดข้อผิดพลาด",
-//             text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่",
-//             icon: "error",
-//             confirmButtonText: "ตกลง"
-//         });
-//     }
-// }
-
-// // ✅ ฟังก์ชันเคลียร์ข้อมูล Session
-// function clearSession() {
-//     console.log("🔹 เคลียร์ Local Storage และ Redirect...");
-//     localStorage.removeItem("access_token");
-//     localStorage.removeItem("refresh_token");
-//     localStorage.removeItem("user_id");
-//     localStorage.removeItem("access_expires_time");
-//     localStorage.removeItem("refresh_expires_time");
-//     localStorage.removeItem("company_id");
-
-//     setTimeout(() => {
-//         window.location.href = "/";
-//     }, 3000);
-  
-// }
-
-// ✅ ตรวจสอบการ Logout และ Refresh Token ของผู้ใช้
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 import Swal from "sweetalert2";
@@ -394,17 +254,36 @@ export async function logoutUser() {
 
             console.log("✅ Logout API Response:", logoutResponse.data);
 
+            // ✅ ตรวจสอบว่ามีข้อมูลก่อนเข้าถึง message
+            if (logoutResponse && logoutResponse.data) {
+                console.log("🔹 Message from API:", logoutResponse.data.message);
+            } else {
+                console.error("❌ logoutResponse หรือ logoutResponse.data เป็น undefined!");
+            }
+
             // ✅ ออกจากระบบสำเร็จ → เคลียร์ Local Storage
             clearSession();
 
             await Swal.fire({
                 title: "ออกจากระบบสำเร็จ!",
                 icon: "success",
-                confirmButtonText: "ตกลง"
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
             });
 
         } catch (logoutError) {
             console.error("❌ Logout API Error:", logoutError);
+
+            // ✅ ตรวจสอบว่ามี response จาก error หรือไม่
+            if (logoutError.response && logoutError.response.data) {
+                console.error("🔹 Error Message:", logoutError.response.data.message);
+            } else {
+                console.error("❌ logoutError.response หรือ logoutError.response.data เป็น undefined!");
+            }
+
             await Swal.fire({
                 title: "เกิดข้อผิดพลาด",
                 text: "ไม่สามารถออกจากระบบได้ กรุณาลองใหม่",
@@ -412,6 +291,7 @@ export async function logoutUser() {
                 confirmButtonText: "ตกลง"
             });
         }
+
     } catch (error) {
         console.error("❌ Error refreshing Access Token:", error);
         await Swal.fire({
@@ -435,10 +315,10 @@ function clearSession() {
     localStorage.removeItem("refresh_expires_time");
     localStorage.removeItem("company_id");
 
-    // ✅ หน่วงเวลา 3 วินาทีก่อน Redirect ไปหน้า Login
+    // ✅ หน่วงเวลา 2 วินาทีก่อน Redirect ไปหน้า Login
     setTimeout(() => {
         window.location.href = "/";
-    }, 3000);
+    }, 2000);
 }
 
 

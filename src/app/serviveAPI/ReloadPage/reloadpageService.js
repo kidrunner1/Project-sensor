@@ -76,7 +76,7 @@ export function reloadPage() {
                 // เช็คว่า Access Token เดิมยังอยู่หรือไม่
                 const updatedAccessToken = localStorage.getItem("access_token");
                 if (updatedAccessToken) {
-                    // console.log("✅ พบ Access Token เดิมใน localStorage → อยู่ในระบบต่อไป");
+                    console.log("✅ พบ Access Token เดิมใน localStorage → อยู่ในระบบต่อไป");
                     return;
                 }
 
@@ -85,13 +85,13 @@ export function reloadPage() {
                 return;
             }
 
-            // console.log("✅ ได้รับ Access Token ใหม่:", newAccessToken);
+            console.log("✅ ได้รับ Access Token ใหม่:", newAccessToken);
 
             // ✅ อัปเดต Access Token ใน localStorage ก่อนทำการเช็ค Logout
             localStorage.setItem("access_token", newAccessToken);
             localStorage.setItem("access_expires_time", newAccessExpiresTime);
 
-            // console.log("✅ Access Token อัปเดตเรียบร้อย! อยู่ในระบบต่อไป...");
+            console.log("✅ Access Token อัปเดตเรียบร้อย! อยู่ในระบบต่อไป...");
         })
         .catch((error) => {
             // console.error("❌ Refresh Token API Error:", error.response?.data || error.message);

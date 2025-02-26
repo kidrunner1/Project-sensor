@@ -1,43 +1,46 @@
 "use client";
 
-import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import { useEffect } from "react";
-import { reloadPage } from "@/app/serviveAPI/ReloadPage/reloadpageService";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import Head from "next/head";
+import { AuthProvider } from "@/app/context/AuthContext"; // ✅ Import `AuthProvider`
+import dynamic from "next/dynamic";
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
+// ✅ Lazy Load Components
+const Navbar = dynamic(() => import("../components/Navbar"), { ssr: false });
+const Sidebar = dynamic(() => import("../components/Sidebar"), { ssr: false });
 
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
-});
+const queryClient = new QueryClient();
 
 export default function DashboardLayout({ children }) {
-    useEffect(() => {
-        reloadPage(); // ✅ ตรวจสอบ Token เมื่อเข้า Dashboard
-        const interval = setInterval(reloadPage, 60000); // 🔄 ตรวจสอบทุก ๆ 1 นาที
-        return () => clearInterval(interval); // 🛑 ล้าง Interval เมื่อออกจากหน้า
-    }, []);
-
     return (
-        <div className="flex w-screen h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
-            <div className="h-screen hidden md:block">
-                <Sidebar />
-            </div>
-            {/* Main Content Area */}
-            <div className="flex flex-col flex-1 h-screen">
-                {/* Navbar (ถ้ามี) */}
-                <Navbar />
+        <AuthProvider>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider attribute="class">
+                    <Head>
+                        <title>Dashboard - My App</title>
+                        <meta name="description" content="Dashboard for managing your app." />
+                    </Head>
 
-                {/* Content Section */}
-                <div className="flex flex-col   justify-center ">
-                    {children}
-                </div>
-            </div>
-        </div>
+                    <div className="flex w-screen h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                        {/* Sidebar */}
+                        <div className="h-screen hidden md:block">
+                            <Sidebar />
+                        </div>
+
+                        {/* Main Content Area */}
+                        <div className="flex flex-col flex-1 h-screen">
+                            {/* Navbar */}
+                            <Navbar />
+
+                            {/* Content Section */}
+                            <div className="flex flex-col flex-1 overflow-y-auto p-4">
+                                {children}
+                            </div>
+                        </div>
+                    </div>
+                </ThemeProvider>
+            </QueryClientProvider>
+        </AuthProvider>
     );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 
 const AnalyticsPage = () => {
     return (
-        <div className="min-h-screen bg-gray-100 p-4">
+        <div className="p-4 flex gap-4 flex-col h-screen overflow-hidden overflow-y-auto">
             <header className="bg-white shadow-md p-4 mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
             </header>

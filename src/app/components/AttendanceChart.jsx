@@ -1,64 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService"; // ดึงข้อมูล API
+import ReactECharts from "echarts-for-react";
+
+// ✅ Mock Data: แทนการเรียก API
+const generateMockData = (timeRange) => {
+  const now = new Date();
+  let data = [];
+  const hoursToFetch = timeRange === "24h" ? 24 : 7; // 24 ชั่วโมง หรือ 7 วัน
+
+  for (let i = hoursToFetch - 1; i >= 0; i--) {
+    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+    data.push({
+      timeLabel: timeRange === "24h"
+        ? time.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })
+        : time.toLocaleDateString("th-TH", { weekday: "short", day: "2-digit", month: "short" }),
+      temperature: Math.round(25 + Math.random() * 10), // สุ่มค่าอุณหภูมิ 25-35°C
+      windSpeed: Math.round(5 + Math.random() * 10), // สุ่มค่าความเร็วลม 5-15 km/h
+      drilldown: `Detail-${i}`,
+    });
+  }
+
+  return data;
+};
 
 const AttendanceChart = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState("24h");
-  const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState(generateMockData("24h"));
   const [drilldown, setDrilldown] = useState(false);
-  const [originalData, setOriginalData] = useState([]);
+  const [originalData, setOriginalData] = useState(chartData);
 
   useEffect(() => {
-    const fetchChartData = async () => {
-      setLoading(true);
-
-      const location = "Bangkok"; // เปลี่ยนสถานที่ได้
-      const weatherData = await fetchWeather(location, selectedTimeRange);
-
-      if (weatherData) {
-        const now = new Date();
-        const data = [];
-        const hoursToFetch = selectedTimeRange === "24h" ? 24 : 7;
-
-        for (let i = hoursToFetch - 1; i >= 0; i--) {
-          const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-          data.push({
-            time: time.toLocaleTimeString("th-TH", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            temperature: Math.round(weatherData.temperature - Math.random() * 5),
-            windSpeed: Math.round(weatherData.wind - Math.random() * 5),
-            drilldown: `Detail-${i}`,
-          });
-        }
-
-        setChartData(data);
-        setOriginalData(data); // เก็บข้อมูลต้นฉบับ
-      }
-
-      setLoading(false);
-    };
-
-    fetchChartData();
+    const newData = generateMockData(selectedTimeRange);
+    setChartData(newData);
+    setOriginalData(newData);
+    setDrilldown(false);
   }, [selectedTimeRange]);
 
-  // ฟังก์ชันสำหรับ Drilldown (เปลี่ยนข้อมูลเมื่อคลิก)
-  const handleBarClick = (data) => {
+  // ฟังก์ชันสำหรับ Drilldown (กรองข้อมูลเมื่อคลิก)
+  const handleBarClick = (params) => {
     if (!drilldown) {
-      const filteredData = chartData.filter((item) => item.drilldown === data.drilldown);
+      const filteredData = chartData.filter((item) => item.drilldown === params.name);
       setChartData(filteredData.length > 0 ? filteredData : chartData);
       setDrilldown(true);
     } else {
@@ -67,10 +49,53 @@ const AttendanceChart = () => {
     }
   };
 
+  // 🔥 ECharts Option
+  const option = {
+    title: {
+      text: `อุณหภูมิและความเร็วลม (${selectedTimeRange === "24h" ? "24 ชั่วโมงล่าสุด" : "7 วันล่าสุด"})`,
+      left: "center",
+      textStyle: { fontSize: 16, fontWeight: "bold" },
+    },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+    },
+    dataZoom: [
+      { type: "inside" }, // ซูมด้วย Scroll
+      { type: "slider" }, // Slider ด้านล่าง
+    ],
+    xAxis: {
+      type: "category",
+      data: chartData.map((item) => item.timeLabel),
+    },
+    yAxis: {
+      type: "value",
+      name: "ค่า",
+    },
+    series: [
+      {
+        name: "อุณหภูมิ (°C)",
+        type: "bar",
+        data: chartData.map((item) => item.temperature),
+        itemStyle: { color: "#87CEEB" }, // สีฟ้า
+        emphasis: { focus: "series" },
+        label: { show: true, position: "top" },
+      },
+      {
+        name: "ความเร็วลม (km/h)",
+        type: "bar",
+        data: chartData.map((item) => item.windSpeed),
+        itemStyle: { color: "#FF6347" }, // สีแดง
+        emphasis: { focus: "series" },
+        label: { show: true, position: "top" },
+      },
+    ],
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg p-4">
       <div className="flex justify-between mb-2">
-        <h1 className="text-lg font-semibold ">
+        <h1 className="text-lg font-semibold">
           อุณหภูมิและความเร็วลม ({selectedTimeRange === "24h" ? "24 ชั่วโมงล่าสุด" : "7 วันล่าสุด"})
         </h1>
         <select
@@ -78,7 +103,7 @@ const AttendanceChart = () => {
           value={selectedTimeRange}
           onChange={(e) => {
             setSelectedTimeRange(e.target.value);
-            setDrilldown(false); // รีเซ็ต Drilldown เมื่อเปลี่ยนช่วงเวลา
+            setDrilldown(false);
           }}
         >
           <option value="24h">24 ชั่วโมง</option>
@@ -86,43 +111,8 @@ const AttendanceChart = () => {
         </select>
       </div>
 
-      {loading ? (
-        <p className="text-center mt-4 text-gray-400">Loading...</p>
-      ) : (
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={chartData} barSize={30}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ddd" />
-            <XAxis dataKey="time" tick={{ fill: "#d1d5db" }} />
-            <YAxis />
-            <Tooltip
-              contentStyle={{
-                borderRadius: "10px",
-                borderColor: "lightgray",
-                backgroundColor: "#333",
-                color: "#fff",
-              }}
-            />
-            <Legend align="right" verticalAlign="top" wrapperStyle={{ paddingBottom: "10px" }} />
+      <ReactECharts option={option} style={{ height: "400px", width: "100%" }} />
 
-            {/* อุณหภูมิ */}
-            <Bar
-              name="อุณหภูมิ (°C)"
-              dataKey="temperature"
-              fill="#87CEEB"
-              onClick={(data) => handleBarClick(data)}
-            />
-
-            {/* ความเร็วลม */}
-            <Bar
-              name="ความเร็วลม (km/h)"
-              dataKey="windSpeed"
-              fill="#FF6347"
-              onClick={(data) => handleBarClick(data)}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-
-      )}
       {drilldown && (
         <button
           className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
@@ -134,6 +124,7 @@ const AttendanceChart = () => {
           กลับไปดูข้อมูลทั้งหมด
         </button>
       )}
+
       {/* คำแนะนำเพิ่มเติมหรือข้อความที่สำคัญ */}
       <div className="mt-4 text-center text-sm text-gray-600">
         <p>คำแนะนำ: ตรวจสอบอุณหภูมิและความเร็วลมในช่วงเวลาที่มีความเสี่ยงสูง เพื่อปรับการทำงานของระบบให้เหมาะสม</p>
