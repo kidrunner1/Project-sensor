@@ -3,6 +3,7 @@ import { useState } from "react";
 import { requestForgetPassword, verifyForgetOtp } from "@/app/serviveAPI/ForgetPassword/forgetPasswordService";
 import Swal from "sweetalert2";
 import { useRouter } from 'next/navigation';
+import Cookies from "js-cookie";
 
 export default function ForgetPasswordForm() {
     const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function ForgetPasswordForm() {
             Swal.fire({ title: "OTP ถูกส่งแล้ว!", text: "โปรดตรวจสอบอีเมลของคุณ", icon: "success", confirmButtonText: "ตกลง" });
 
             setUserId(response.user_id);
-            localStorage.setItem("forgot_user_id", response.user_id); // ✅ บันทึก user_id
+            Cookies.set("forgot_user_id", response.user_id); // ✅ บันทึก user_id
             setStep(2);
         } catch (error) {
             Swal.fire({ title: "เกิดข้อผิดพลาด", text: error.message, icon: "error", confirmButtonText: "ตกลง" });
@@ -54,7 +55,7 @@ export default function ForgetPasswordForm() {
             Swal.fire({ title: "ยืนยัน OTP สำเร็จ!", text: "กำลังนำคุณไปตั้งค่ารหัสผ่านใหม่...", icon: "success", confirmButtonText: "ตกลง" });
 
             setOtpVerified(true);
-            localStorage.setItem("forgot_otp", otpString); // ✅ บันทึก OTP ที่ผ่านแล้ว
+            Cookies.set("forgot_otp", otpString); // ✅ บันทึก OTP ที่ผ่านแล้ว
             window.location.href = "/ResetPassword"; // ✅ ไปที่ Reset Password
         } catch (error) {
             Swal.fire({ title: "OTP ไม่ถูกต้อง", text: "กรุณาตรวจสอบรหัส OTP อีกครั้ง", icon: "error", confirmButtonText: "ลองอีกครั้ง" });

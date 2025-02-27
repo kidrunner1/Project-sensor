@@ -1,5 +1,6 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
+import Cookies from "js-cookie";
 
 const ADD_COMPANY_ID_API = `http://${ipconfig.API_HOST}/api/auth/add-company-id`;
 
@@ -44,8 +45,8 @@ export const addCompanyId = async (userId, companyId, accessToken, refreshToken)
     console.log("🔹 `company_id` ที่ได้รับ:", companyIdFromAPI);
 
     // ✅ อัปเดตค่าใน Local Storage
-    localStorage.setItem("access_token", newAccessToken);
-    localStorage.setItem("company_id", companyIdFromAPI);
+    Cookies.set("access_token", newAccessToken);
+    Cookies.set("company_id", companyIdFromAPI);
     console.log("✅ บันทึก Access Token และ Company ID ลง Local Storage สำเร็จ!");
 
     return response.data;

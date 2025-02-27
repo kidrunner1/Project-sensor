@@ -1,5 +1,6 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
+import Cookies from "js-cookie";
 
 const GOOGLE_AUTH_URL = `http://${ipconfig.API_HOST}/api/auth/google/login`;
 const GOOGLE_CALLBACK_URL = `http://${ipconfig.API_HOST}/api/auth/google/callback`;
@@ -44,11 +45,11 @@ export function loginWithGooglePopup() {
             const { access_token, refresh_token, token_expiry, user } = event.data;
 
             if (access_token) {
-                localStorage.setItem("access_token", access_token);
-                localStorage.setItem("refresh_token", refresh_token);
-                localStorage.setItem("token_expiry", token_expiry);
-                localStorage.setItem("userId", user.id);
-                localStorage.setItem("userName", user.name);
+                Cookies.set("access_token", access_token);
+                Cookies.set("refresh_token", refresh_token);
+                Cookies.set("token_expiry", token_expiry);
+                Cookies.set("userId", user.id);
+                Cookies.set("userName", user.name);
 
                 Swal.fire({
                     title: "เข้าสู่ระบบสำเร็จ!",

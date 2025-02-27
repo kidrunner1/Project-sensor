@@ -1,5 +1,5 @@
 "use client";
-
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
@@ -33,7 +33,7 @@ const LargeScaleAreaChartCH2O = () => {
 
   // ✅ โหลดข้อมูลจาก localStorage (ถ้ามี)
   useEffect(() => {
-    const savedData = localStorage.getItem("ch2o_data");
+    const savedData = Cookies.get("ch2o_data");
     if (savedData) {
       setChartData(JSON.parse(savedData));
     } else {
@@ -49,7 +49,7 @@ const LargeScaleAreaChartCH2O = () => {
         if (newData.length > 50) newData.shift(); // จำกัดข้อมูลไม่ให้เยอะเกินไป
 
         // ✅ บันทึกข้อมูลลงใน localStorage
-        localStorage.setItem("ch2o_data", JSON.stringify(newData));
+        Cookies.set("ch2o_data", JSON.stringify(newData));
 
         return newData;
       });

@@ -37,7 +37,7 @@
 //         const isExpired = refreshResponse.data.hasOwnProperty("is_expired") ? String(refreshResponse.data.is_expired) : "false";
 //         const isRevoked = refreshResponse.data.hasOwnProperty("is_revoked") ? !!refreshResponse.data.is_revoked : false;
 
-//         const NewAC = localStorage.setItem("new_access_token", newAccessToken); // ✅ บันทึก new_access_token ลง Local Storage
+//         const NewAC = Cookies.set("new_access_token", newAccessToken); // ✅ บันทึก new_access_token ลง Local Storage
 
 //         console.log("🔹 user_status:", refreshResponse.data.user_status);
 //         console.log("🔹 is_expired (boolean):", isExpired);
@@ -68,7 +68,7 @@
 //             }
 
 //             // ✅ บันทึก Access Token ใหม่ลง Local Storage
-//             localStorage.setItem("access_token", newAccessToken);
+//             Cookies.set("access_token", newAccessToken);
 //             console.log("✅ อัปเดต new_access_token ใน Local Storage:", newAccessToken);
 
 //             // ✅ ดึงค่าจาก Local Storage มาใช้ใหม่
@@ -171,15 +171,16 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 import Swal from "sweetalert2";
+import Cookies from "js-cookie";
 
 // ✅ URL API
 const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
 const LOGOUT_API = `http://${ipconfig.API_HOST}/api/auth/logout`;
 
 export async function logoutUser() {
-    let accessToken = localStorage.getItem("access_token");
-    const refreshToken = localStorage.getItem("refresh_token");
-    const userId = localStorage.getItem("user_id");
+    let accessToken = Cookies.get("access_token");
+    const refreshToken = Cookies.get("refresh_token");
+    const userId = Cookies.get("user_id");
 
     console.log("🔹 `user_id` ที่ใช้สำหรับ Logout:", userId);
     console.log("🔹 `access_token` ก่อน Logout:", accessToken);
@@ -206,7 +207,7 @@ export async function logoutUser() {
         const isExpired = refreshResponse.data?.is_expired ? String(refreshResponse.data.is_expired) : "false";
         const isRevoked = refreshResponse.data?.is_revoked ? !!refreshResponse.data.is_revoked : false;
 
-        localStorage.setItem("new_access_token", newAccessToken);
+        
         console.log("🔹 user_status:", refreshResponse.data.user_status);
         console.log("🔹 is_expired (boolean):", isExpired);
         console.log("🔹 is_revoked (boolean):", isRevoked);
@@ -214,14 +215,14 @@ export async function logoutUser() {
 
         if (refreshResponse.data.user_status === "online" && isExpired === "false") {
             console.log("✅ Access Token ปัจจุบันยังใช้งานได้ → ใช้ทำ Logout");
-            accessToken = localStorage.getItem("access_token");
+            accessToken = Cookies.get("access_token");
         } else if (isExpired === "true" && isRevoked && newAccessToken) {
             if (newAccessToken === refreshToken) {
                 console.error("❌ new_access_token ที่ได้รับมาเป็น refresh_token ซึ่งผิดพลาด!");
                 clearSession();
                 return;
             }
-            localStorage.setItem("access_token", newAccessToken);
+            Cookies.set("access_token", newAccessToken);
             console.log("✅ อัปเดต new_access_token ใน Local Storage:", newAccessToken);
             accessToken = newAccessToken;
         } else {
@@ -308,12 +309,15 @@ function clearSession() {
     console.log("🔹 เคลียร์ Local Storage และ Redirect... (รอ 3 วินาที)");
 
     // ✅ เคลียร์ข้อมูล Local Storage
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("access_expires_time");
-    localStorage.removeItem("refresh_expires_time");
-    localStorage.removeItem("company_id");
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    Cookies.remove("user_id");
+    Cookies.remove("access_expires_time");
+    Cookies.remove("refresh_expires_time");
+    Cookies.remove("company_id");
+    Cookies.remove("ozone_data");
+    Cookies.remove("roles");
+    Cookies.remove("ch2o_data");
 
     // ✅ หน่วงเวลา 2 วินาทีก่อน Redirect ไปหน้า Login
     setTimeout(() => {

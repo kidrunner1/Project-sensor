@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FaBuilding } from "react-icons/fa";
 import { addCompanyId } from "@/app/serviveAPI/AddCompanyID/serviceAddcompanyId";
 import Swal from "sweetalert2";
+import Cookies from "js-cookie";
 
 const AddCompanyID = () => {
   const [companyID, setCompanyID] = useState("");
@@ -11,7 +12,7 @@ const AddCompanyID = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const storedCompanyId = localStorage.getItem("company_id");
+    const storedCompanyId = Cookies.get("company_id");
     console.log("🔍 LocalStorage company_id ก่อนเริ่มหน้า:", storedCompanyId);
 
     if (storedCompanyId) {
@@ -24,9 +25,9 @@ const AddCompanyID = () => {
     setLoading(true);
 
     try {
-      const userId = localStorage.getItem("user_id");
-      const accessToken = localStorage.getItem("access_token");
-      const refreshToken = localStorage.getItem("refresh_token");
+      const userId = Cookies.get("user_id");
+      const accessToken = Cookies.get("access_token");
+      const refreshToken = Cookies.get("refresh_token");
 
       if (!userId || !accessToken || !refreshToken) {
         throw new Error("⚠️ ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
@@ -41,8 +42,8 @@ const AddCompanyID = () => {
 
       if (response?.company_id) {
         // ✅ บันทึก Company ID ลง LocalStorage
-        localStorage.setItem("company_id", response.company_id);
-        console.log("✅ บันทึก Company ID ลง LocalStorage:", response.company_id);
+        Cookies.set("company_id", response.company_id);
+        console.log("✅ บันทึก Company ID ลง Cookies:", response.company_id);
       } else {
         console.warn("🚨 API ไม่ได้ส่ง company_id กลับมา! อาจเกิดปัญหาฝั่ง Backend");
         throw new Error("API ไม่ได้ส่ง Company ID กลับมา");

@@ -1,5 +1,6 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
+import Cookies from "js-cookie";
 
 // ✅ URL สำหรับการเรียก API ยืนยัน OTP
 const API_URL = `http://${ipconfig.API_HOST}/api/auth/verify-otp-login`;
@@ -34,19 +35,19 @@ export async function verifyOtp(userId, otp) {
         console.log("✅ `user_id` ที่จะบันทึกลง Local Storage:", finalUserId);
 
         // ✅ จัดเก็บ Token และ `user_id` ลง Local Storage
-        localStorage.setItem("user_id", finalUserId);
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
-        localStorage.setItem("access_expires_time", access_expires_time);
-        localStorage.setItem("refresh_expires_time", refresh_expires_time);
-        localStorage.setItem("roles", JSON.stringify(roles));
+        Cookies.set("user_id", finalUserId);
+        Cookies.set("access_token", access_token);
+        Cookies.set("refresh_token", refresh_token);
+        Cookies.set("access_expires_time", access_expires_time);
+        Cookies.set("refresh_expires_time", refresh_expires_time);
+        Cookies.set("roles", JSON.stringify(roles));
 
         // ✅ ตรวจสอบ `company_exist` และ `company_id` ก่อนบันทึก
         console.log("📌 ตรวจสอบ company_exist:", company_exist);
         console.log("📌 ตรวจสอบ company_id:", company_id);
 
         if (company_exist && company_id) {
-            localStorage.setItem("company_id", company_id);
+            Cookies.set("company_id", company_id);
             console.log("✅ Company ID saved:", company_id);
         } else {
             console.warn("🚨 No valid Company ID found! Removing from LocalStorage.");

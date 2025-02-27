@@ -16,7 +16,7 @@
 
 //   useEffect(() => {
 //     const fetchUserDetails = async () => {
-//       const accessToken = localStorage.getItem("access_token");
+//       const accessToken = Cookies.getItem("access_token");
 //       const userId = localStorage.getItem("user_id");
 
 //       if (!accessToken || !userId) {
@@ -135,6 +135,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logoutUser } from "@/app/serviveAPI/Logout/logoutService";
 import { getUserData } from "@/app/serviveAPI/GetUser/serviceUser";
+import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import Image from "next/image";
 import Link from "next/link";
@@ -148,8 +149,8 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      const accessToken = localStorage.getItem("access_token");
-      const userId = localStorage.getItem("user_id");
+      const accessToken = Cookies.get("access_token");
+      const userId = Cookies.get("user_id");
 
       if (!accessToken || !userId) {
         setIsAuthenticated(false);
@@ -211,7 +212,7 @@ const Navbar = () => {
     <nav className="bg-gray-100 px-6 py-4 flex justify-between items-center shadow-md">
       {/* Left: Welcome Message */}
       <h1 className="text-xl font-semibold text-gray-800">
-        DOGNOSE Good morning, <span className="font-bold">{userData?.name || "User"}!</span>
+        DOGNOSE 
       </h1>
 
       {/* Right: Icons & Profile */}

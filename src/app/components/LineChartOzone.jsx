@@ -1,5 +1,5 @@
 "use client";
-
+import Cookies from "js-cookie";
 import React, { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
@@ -39,7 +39,7 @@ const LargeScaleAreaChartOzone = () => {
         const newData = [...prevData, generateO3Data()];
 
         // ✅ บันทึกข้อมูลลงใน localStorage
-        localStorage.setItem("ozone_data", JSON.stringify(newData));
+        Cookies.set("ozone_data", JSON.stringify(newData));
         return newData.length > 50 ? newData.slice(1) : newData; // เก็บข้อมูลสูงสุด 50 จุด
       });
     }, 5000);

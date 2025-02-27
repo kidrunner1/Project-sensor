@@ -1,5 +1,6 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
+import Cookies from "js-cookie";
 
 // ✅ URL API
 const FORGET_PASSWORD_API = `http://${ipconfig.API_HOST}/api/auth/forget-password`;
@@ -38,8 +39,8 @@ export async function verifyForgetOtp(userId, otp) {
         console.log("✅ Verify OTP Response:", response.data);
 
         // ✅ บันทึก `user_id` และ `otp` ลง Local Storage เพื่อใช้ใน Reset Password
-        localStorage.setItem("forgot_user_id", response.data.user_id);
-        localStorage.setItem("forgot_otp", otp);
+        Cookies.set("forgot_user_id", response.data.user_id);
+        Cookies.set("forgot_otp", otp);
 
         return response.data;
     } catch (error) {
