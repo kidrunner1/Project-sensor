@@ -27,7 +27,7 @@ export default function Login() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedUserId = localStorage.getItem('user_id');
+      const storedUserId = sessionStorage.getItem('user_id');
       if (storedUserId) {
         console.log("✅ พบ `user_id` ใน Local Storage:", storedUserId);
         router.push('/MainDashboard');
@@ -35,7 +35,7 @@ export default function Login() {
     }
   }, []);
 
-  // // ✅ ตรวจสอบค่าของแต่ละช่องแบบเรียลไทม์
+
   // const validateField = (name, value) => {
   //   let error = '';
 
@@ -122,7 +122,7 @@ export default function Login() {
             confirmButtonText: 'ตกลง'
           });
         } else {
-          localStorage.setItem('user_id', loginResponse.userId);
+          sessionStorage.setItem('user_id', loginResponse.userId);
 
           Swal.fire({
             title: 'เข้าสู่ระบบสำเร็จ!',
@@ -192,24 +192,24 @@ export default function Login() {
         console.log("✅ บันทึก user_id ลง Local Storage:", finalUserId);
 
         // ✅ บันทึกข้อมูลลง Local Storage
-        localStorage.setItem("user_id", finalUserId);
-        localStorage.setItem("access_token", otpResponse.access_token);
-        localStorage.setItem("refresh_token", otpResponse.refresh_token);
-        localStorage.setItem("access_expires_time", otpResponse.access_expires_time);
-        localStorage.setItem("refresh_expires_time", otpResponse.refresh_expires_time);
-        localStorage.setItem("roles", JSON.stringify(otpResponse.roles));
+        sessionStorage.setItem("user_id", finalUserId);
+        sessionStorage.setItem("access_token", otpResponse.access_token);
+        sessionStorage.setItem("refresh_token", otpResponse.refresh_token);
+        sessionStorage.setItem("access_expires_time", otpResponse.access_expires_time);
+        sessionStorage.setItem("refresh_expires_time", otpResponse.refresh_expires_time);
+        sessionStorage.setItem("roles", JSON.stringify(otpResponse.roles));
 
         // ✅ ตรวจสอบว่า company_id มีค่าหรือไม่ก่อนบันทึก
         if (otpResponse.company_exist && otpResponse.company_id) {
           console.log("✅ มี Company ID:", otpResponse.company_id);
-          localStorage.setItem("company_id", otpResponse.company_id);
+          sessionStorage.setItem("company_id", otpResponse.company_id);
         } else {
-          console.warn("🚨 ไม่มี Company ID! ลบค่าที่มีอยู่ใน LocalStorage");
-          localStorage.removeItem("company_id"); // ❌ ลบค่าเก่าถ้ามีปัญหา
+          console.warn("🚨 ไม่มี Company ID! ลบค่าที่มีอยู่ใน sessionStorage");
+          sessionStorage.removeItem("company_id"); // ❌ ลบค่าเก่าถ้ามีปัญหา
         }
 
-        // ✅ ตรวจสอบค่าที่ถูกบันทึกใน LocalStorage
-        console.log("🔍 LocalStorage company_id:", localStorage.getItem("company_id"));
+        // ✅ ตรวจสอบค่าที่ถูกบันทึกใน sessionStorage
+        console.log("🔍 sessionStorage company_id:", sessionStorage.getItem("company_id"));
 
         // ✅ ถ้ามี Company ID ให้ไปที่ Dashboard
         if (otpResponse.company_exist) {
@@ -314,17 +314,30 @@ export default function Login() {
           </div>
 
           {/* RIGHT SECTION */}
-          <div className="w-full md:w-2/5 text-white rounded-tl-lg rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url('/images/bg-login.png')" }}>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
-              ยินดีต้อนรับกลับ!
-            </h2>
-            <div className="border-2 w-12 border-white inline-block mb-2"></div>
-            <p className="mb-6 md:mb-10 text-sm text-center">
-              เข้าสู่ระบบเพื่อเข้าถึง **การแจ้งเตือนมลพิษ** และ **ระบบวิเคราะห์กลิ่นอัจฉริยะ**
-              ให้ DOGNOSE ดูแลความปลอดภัยของคุณทุกที่ ทุกเวลา
-            </p>
+          <div
+            className="relative w-full md:w-2/5 text-white rounded-tl-lg rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/images/bg-login.png')" }}
+          >
+
+            {/* 🔹 สร้าง Layer พื้นหลังเบลอ */}
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-xl z-0"></div>
+
+            {/* 🔹 เนื้อหาหลัก (ต้องมี `relative z-10` เพื่อให้ข้อความอยู่เหนือพื้นหลัง) */}
+            <div className="relative z-10 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
+                ยินดีต้อนรับกลับ!
+              </h2>
+              <div className="border-2 w-12 border-white inline-block mb-2"></div>
+              <p className="mb-6 md:mb-10 text-sm">
+                เข้าสู่ระบบเพื่อเข้าถึง <strong>การแจ้งเตือนมลพิษ</strong> และ
+                <strong>ระบบวิเคราะห์กลิ่นอัจฉริยะ</strong>
+                <br />
+                ให้ DOGNOSE ดูแลความปลอดภัยของคุณทุกที่ ทุกเวลา
+              </p>
+            </div>
+
           </div>
+
         </div>
       </main>
 
@@ -350,7 +363,7 @@ export default function Login() {
                   maxLength={1}
                   value={num}
                   onChange={(e) => handleOtp(index, e.target.value)}
-                  className="w-12 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-12 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               ))}
             </div>

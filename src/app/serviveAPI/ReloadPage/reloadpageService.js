@@ -8,17 +8,17 @@ export function reloadPage() {
 
     // ✅ ตรวจสอบก่อนว่าโค้ดรันบน Client-Side หรือไม่
     if (typeof window === "undefined") {
-        // console.warn("⚠️ reloadPage() ถูกเรียกบน Server → ข้ามการทำงาน");
+        console.warn("⚠️ reloadPage() ถูกเรียกบน Server → ข้ามการทำงาน");
         return;
     }
 
-    // console.log("🔄 Checking tokens in localStorage...");
+    // console.log("🔄 Checking tokens in sessionStorage...");
 
-    const accessToken = localStorage.getItem("access_token");
-    const refreshToken = localStorage.getItem("refresh_token");
-    const userId = localStorage.getItem("user_id");
-    const accessExpiresTime = localStorage.getItem("access_expires_time");
-    const refreshExpiresTime = localStorage.getItem("refresh_expires_time");
+    const accessToken = sessionStorage.getItem("access_token");
+    const refreshToken = sessionStorage.getItem("refresh_token");
+    const userId = sessionStorage.getItem("user_id");
+    const accessExpiresTime = sessionStorage.getItem("access_expires_time");
+    const refreshExpiresTime = sessionStorage.getItem("refresh_expires_time");
 
     if (!refreshToken || !userId || !accessExpiresTime || !refreshExpiresTime) {
         // console.warn("❌ Token ไม่ครบ → ผู้ใช้ต้องเข้าสู่ระบบใหม่");
@@ -30,18 +30,18 @@ export function reloadPage() {
     const accessExpiresDate = new Date(accessExpiresTime);
     const refreshExpiresDate = new Date(refreshExpiresTime);
 
-    // console.log("🔹 Access Token Expiry:", accessExpiresDate);
-    // console.log("🔹 Refresh Token Expiry:", refreshExpiresDate);
-    // console.log("🔹 Current Time:", now);
+    console.log("🔹 Access Token Expiry:", accessExpiresDate);
+    console.log("🔹 Refresh Token Expiry:", refreshExpiresDate);
+    console.log("🔹 Current Time:", now);
 
     // ✅ เงื่อนไขที่ 1: ถ้า Refresh Token หมดอายุ → ตรวจสอบก่อน Logout
     if (now >= refreshExpiresDate) {
         // console.warn("❌ Refresh Token หมดอายุ → ต้อง Login ใหม่");
 
         // เช็คว่า Access Token ล่าสุดยังอยู่หรือไม่
-        const updatedAccessToken = localStorage.getItem("access_token");
+        const updatedAccessToken = sessionStorage.getItem("access_token");
         if (updatedAccessToken) {
-            // console.log("✅ พบ Access Token ใน localStorage → อยู่ในระบบต่อไป");
+            console.log("✅ พบ Access Token ใน sessionStorage → อยู่ในระบบต่อไป");
             return;
         }
 
@@ -51,7 +51,7 @@ export function reloadPage() {
 
     // ✅ เงื่อนไขที่ 2: ถ้า Access Token ยังไม่หมดอายุ → อยู่ในระบบต่อไป
     if (now < accessExpiresDate) {
-        // console.log("✅ Access Token ยังใช้งานได้ → ไม่ต้อง Refresh");
+        console.log("✅ Access Token ยังใช้งานได้ → ไม่ต้อง Refresh");
         return;
     }
 
@@ -65,7 +65,7 @@ export function reloadPage() {
             { headers: { Authorization: `Bearer ${refreshToken}`, "Content-Type": "application/json" } }
         )
         .then((response) => {
-            // console.log("✅ API Response:", response.data);
+            console.log("✅ API Response:", response.data);
 
             const newAccessToken = response.data.new_access_token;
             const newAccessExpiresTime = response.data.access_expires;
@@ -74,9 +74,9 @@ export function reloadPage() {
             if (!newAccessToken) {
 
                 // เช็คว่า Access Token เดิมยังอยู่หรือไม่
-                const updatedAccessToken = localStorage.getItem("access_token");
+                const updatedAccessToken = sessionStorage.getItem("access_token");
                 if (updatedAccessToken) {
-                    console.log("✅ พบ Access Token เดิมใน localStorage → อยู่ในระบบต่อไป");
+                    console.log("✅ พบ Access Token เดิมใน sessionStorage → อยู่ในระบบต่อไป");
                     return;
                 }
 
@@ -87,19 +87,19 @@ export function reloadPage() {
 
             console.log("✅ ได้รับ Access Token ใหม่:", newAccessToken);
 
-            // ✅ อัปเดต Access Token ใน localStorage ก่อนทำการเช็ค Logout
-            localStorage.setItem("access_token", newAccessToken);
-            localStorage.setItem("access_expires_time", newAccessExpiresTime);
+            // ✅ อัปเดต Access Token ใน sessionStorage ก่อนทำการเช็ค Logout
+            sessionStorage.setItem("access_token", newAccessToken);
+            sessionStorage.setItem("access_expires_time", newAccessExpiresTime);
 
             console.log("✅ Access Token อัปเดตเรียบร้อย! อยู่ในระบบต่อไป...");
         })
         .catch((error) => {
-            // console.error("❌ Refresh Token API Error:", error.response?.data || error.message);
+            console.error("❌ Refresh Token API Error:", error.response?.data || error.message);
 
             // ตรวจสอบว่า Access Token เดิมยังอยู่หรือไม่ ก่อน Logout
-            const updatedAccessToken = localStorage.getItem("access_token");
+            const updatedAccessToken = sessionStorage.getItem("access_token");
             if (updatedAccessToken) {
-                // console.log("✅ พบ Access Token ใน localStorage → อยู่ในระบบต่อไป");
+                console.log("✅ พบ Access Token ใน sessionStorage → อยู่ในระบบต่อไป");
                 return;
             }
 
@@ -117,13 +117,13 @@ function showSessionExpiredAlert() {
         allowOutsideClick: false,
     }).then(() => {
         // 🔹 ลบเฉพาะค่าที่เกี่ยวข้องกับเซสชัน
-        localStorage.removeItem("company_id")
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user_id");
-        localStorage.removeItem("access_expires_time");
-        localStorage.removeItem("refresh_expires_time");
-        // localStorage.clear();
+        sessionStorage.removeItem("company_id")
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("refresh_token");
+        sessionStorage.removeItem("user_id");
+        sessionStorage.removeItem("access_expires_time");
+        sessionStorage.removeItem("refresh_expires_time");
+        
         window.location.href = "/";
     });
 }

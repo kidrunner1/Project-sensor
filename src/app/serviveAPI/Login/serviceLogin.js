@@ -41,9 +41,9 @@ export async function loginUser(identifier, password, method = 'email') {
         console.error("❌ Login error:", error);
 
         if (error.response) {
-            throw new Error('Login failed: ' + (error.response.data.message || 'Unknown error'));
+            throw new Error('เข้าสู่ระบบผิดพลาด: ' + (error.response.data.message || 'ไม่พบผู้ใช้งาน'));
         } else {
-            throw new Error('Login failed: ' + error.message);
+            throw new Error('เข้าสู่ระบบผิดพลาด: ' + error.message);
         }
     }
 }

@@ -34,23 +34,23 @@ export async function verifyOtp(userId, otp) {
         console.log("✅ `user_id` ที่จะบันทึกลง Local Storage:", finalUserId);
 
         // ✅ จัดเก็บ Token และ `user_id` ลง Local Storage
-        localStorage.setItem("user_id", finalUserId);
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
-        localStorage.setItem("access_expires_time", access_expires_time);
-        localStorage.setItem("refresh_expires_time", refresh_expires_time);
-        localStorage.setItem("roles", JSON.stringify(roles));
+        sessionStorage.setItem("user_id", finalUserId);
+        sessionStorage.setItem("access_token", access_token);
+        sessionStorage.setItem("refresh_token", refresh_token);
+        sessionStorage.setItem("access_expires_time", access_expires_time);
+        sessionStorage.setItem("refresh_expires_time", refresh_expires_time);
+        sessionStorage.setItem("roles", JSON.stringify(roles));
 
         // ✅ ตรวจสอบ `company_exist` และ `company_id` ก่อนบันทึก
         console.log("📌 ตรวจสอบ company_exist:", company_exist);
         console.log("📌 ตรวจสอบ company_id:", company_id);
 
         if (company_exist && company_id) {
-            localStorage.setItem("company_id", company_id);
+            sessionStorage.setItem("company_id", company_id);
             console.log("✅ Company ID saved:", company_id);
         } else {
-            console.warn("🚨 No valid Company ID found! Removing from LocalStorage.");
-            localStorage.removeItem("company_id");
+            console.warn("🚨 No valid Company ID found! Removing from sessionStorage.");
+            sessionStorage.removeItem("company_id");
         }
 
         console.log("🔐 Token & User ID saved successfully!");

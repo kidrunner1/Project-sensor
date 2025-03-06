@@ -38,8 +38,8 @@ const LargeScaleAreaChartOzone = () => {
       setChartData((prevData) => {
         const newData = [...prevData, generateO3Data()];
 
-        // ✅ บันทึกข้อมูลลงใน localStorage
-        localStorage.setItem("ozone_data", JSON.stringify(newData));
+        // ✅ บันทึกข้อมูลลงใน sessionStorage
+        sessionStorage.setItem("ozone_data", JSON.stringify(newData));
         return newData.length > 50 ? newData.slice(1) : newData; // เก็บข้อมูลสูงสุด 50 จุด
       });
     }, 5000);

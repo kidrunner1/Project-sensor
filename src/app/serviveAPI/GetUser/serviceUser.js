@@ -5,7 +5,7 @@ const GETUSER_API = `http://${ipconfig.API_HOST}/api/auth/get-user`
 
 export const getUserData = async (userId) => {
     try {
-        const accessToken = localStorage.getItem("access_token");
+        const accessToken = sessionStorage.getItem("access_token");
 
         if (!accessToken) {
             throw new Error("Access token not found.");

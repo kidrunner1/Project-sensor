@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         setHasMounted(true); // ✅ ให้ค่าโหลดบน Client เท่านั้น
-        const token = localStorage.getItem("access_token");
+        const token = sessionStorage.getItem("access_token");
 
         if (!token) {
             console.warn("🔴 No access token found, redirecting to login...");
@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
 
         setIsAuthenticated(true);
         reloadPage();
-        const interval = setInterval(reloadPage, 3600000);
+        const interval = setInterval(reloadPage, 60000);
         return () => clearInterval(interval);
     }, [router]);
 

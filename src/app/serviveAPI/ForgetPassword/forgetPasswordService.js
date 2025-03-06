@@ -38,8 +38,8 @@ export async function verifyForgetOtp(userId, otp) {
         console.log("✅ Verify OTP Response:", response.data);
 
         // ✅ บันทึก `user_id` และ `otp` ลง Local Storage เพื่อใช้ใน Reset Password
-        localStorage.setItem("forgot_user_id", response.data.user_id);
-        localStorage.setItem("forgot_otp", otp);
+        sessionStorage.setItem("forgot_user_id", response.data.user_id);
+        sessionStorage.setItem("forgot_otp", otp);
 
         return response.data;
     } catch (error) {
@@ -55,8 +55,8 @@ export async function verifyForgetOtp(userId, otp) {
  * @returns {Promise<Object>} API Response
  */
 export async function resetForgetPassword(newPassword) {
-    const userId = localStorage.getItem("forgot_user_id");
-    const otp = localStorage.getItem("forgot_otp");
+    const userId = sessionStorage.getItem("forgot_user_id");
+    const otp = sessionStorage.getItem("forgot_otp");
 
     if (!userId || !otp) {
         throw new Error("❌ ไม่พบข้อมูล `user_id` หรือ `otp` กรุณาขอ OTP ใหม่");
@@ -72,8 +72,8 @@ export async function resetForgetPassword(newPassword) {
         console.log("✅ Reset Password Response:", response.data);
 
         // ✅ ลบข้อมูล `user_id` และ `otp` ออกจาก Local Storage หลังจากเปลี่ยนรหัสผ่านสำเร็จ
-        localStorage.removeItem("forgot_user_id");
-        localStorage.removeItem("forgot_otp");
+        sessionStorage.removeItem("forgot_user_id");
+        sessionStorage.removeItem("forgot_otp");
 
         return response.data;
     } catch (error) {

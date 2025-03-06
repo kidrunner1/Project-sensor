@@ -11,11 +11,11 @@ const AddCompanyID = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const storedCompanyId = localStorage.getItem("company_id");
-    console.log("🔍 LocalStorage company_id ก่อนเริ่มหน้า:", storedCompanyId);
+    const storedCompanyId = sessionStorage.getItem("company_id");
+    console.log("🔍 sessionStorage company_id ก่อนเริ่มหน้า:", storedCompanyId);
 
     if (storedCompanyId) {
-      console.log("✅ พบ Company ID ใน LocalStorage กำลัง Redirect...");
+      console.log("✅ พบ Company ID ใน sessionStorage กำลัง Redirect...");
       router.push("/MainDashboard"); // ถ้ามี Company ID แล้ว ส่งไปที่ Dashboard ทันที
     }
   }, []);
@@ -24,9 +24,9 @@ const AddCompanyID = () => {
     setLoading(true);
 
     try {
-      const userId = localStorage.getItem("user_id");
-      const accessToken = localStorage.getItem("access_token");
-      const refreshToken = localStorage.getItem("refresh_token");
+      const userId = sessionStorage.getItem("user_id");
+      const accessToken = sessionStorage.getItem("access_token");
+      const refreshToken = sessionStorage.getItem("refresh_token");
 
       if (!userId || !accessToken || !refreshToken) {
         throw new Error("⚠️ ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
@@ -40,9 +40,9 @@ const AddCompanyID = () => {
       console.log("✅ API Response:", response);
 
       if (response?.company_id) {
-        // ✅ บันทึก Company ID ลง LocalStorage
-        localStorage.setItem("company_id", response.company_id);
-        console.log("✅ บันทึก Company ID ลง LocalStorage:", response.company_id);
+        // ✅ บันทึก Company ID ลง sessionStorage
+        sessionStorage.setItem("company_id", response.company_id);
+        console.log("✅ บันทึก Company ID ลง sessionStorage:", response.company_id);
       } else {
         console.warn("🚨 API ไม่ได้ส่ง company_id กลับมา! อาจเกิดปัญหาฝั่ง Backend");
         throw new Error("API ไม่ได้ส่ง Company ID กลับมา");

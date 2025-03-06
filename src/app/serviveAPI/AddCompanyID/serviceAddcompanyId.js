@@ -44,8 +44,8 @@ export const addCompanyId = async (userId, companyId, accessToken, refreshToken)
     console.log("🔹 `company_id` ที่ได้รับ:", companyIdFromAPI);
 
     // ✅ อัปเดตค่าใน Local Storage
-    localStorage.setItem("access_token", newAccessToken);
-    localStorage.setItem("company_id", companyIdFromAPI);
+    sessionStorage.setItem("access_token", newAccessToken);
+    sessionStorage.setItem("company_id", companyIdFromAPI);
     console.log("✅ บันทึก Access Token และ Company ID ลง Local Storage สำเร็จ!");
 
     return response.data;

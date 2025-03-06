@@ -247,19 +247,26 @@ const Register = () => {
 
           {/* RIGHT SECTION */}
           <div
-            className="w-full md:w-2/5 text-white rounded-tl-lg rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500 bg-cover bg-center bg-no-repeat"
+            className="relative w-full md:w-2/5 text-white rounded-tl-lg rounded-b-lg md:rounded-tr-2xl md:rounded-br-2xl py-12 px-6 md:py-36 flex flex-col items-center transition-all duration-500 bg-cover bg-center bg-no-repeat overflow-hidden"
             style={{ backgroundImage: "url('/images/bg-login.png')" }}
           >
-            <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
-              ยินดีต้อนรับ
-            </h2>
-            <p className="text-sm md:text-base text-center text-white max-w-xs leading-relaxed">
-              เข้าร่วมกับเราวันนี้เพื่อใช้งานระบบ <span className="font-semibold">DOGNOSE</span>
-              เทคโนโลยีสุดล้ำที่ช่วยตรวจจับ <span className="font-semibold">กลิ่นสารเคมี</span>
-              และ <span className="font-semibold">สิ่งแวดล้อมที่เป็นอันตราย</span> รอบตัวคุณ
-              เพื่อความปลอดภัยที่ดียิ่งขึ้น 
-            </p>
+            {/* 🔹 สร้าง Layer พื้นหลังเบลอ */}
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-xl z-0"></div>
+
+            {/* 🔹 เนื้อหาหลัก (ต้องมี `relative z-10` เพื่อให้ข้อความอยู่เหนือพื้นหลัง) */}
+            <div className="relative z-10 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 animate-slide-in">
+                ยินดีต้อนรับ
+              </h2>
+              <p className="text-sm md:text-base text-white max-w-xs leading-relaxed">
+                เข้าร่วมกับเราวันนี้เพื่อใช้งานระบบ <span className="font-semibold">DOGNOSE</span>
+                เทคโนโลยีสุดล้ำที่ช่วยตรวจจับ <span className="font-semibold">กลิ่นสารเคมี</span>
+                และ <span className="font-semibold">สิ่งแวดล้อมที่เป็นอันตราย</span> รอบตัวคุณ
+                เพื่อความปลอดภัยที่ดียิ่งขึ้น
+              </p>
+            </div>
           </div>
+
 
         </div>
       </main>

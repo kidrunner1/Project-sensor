@@ -31,9 +31,9 @@ const generateCH2OData = () => ({
 const LargeScaleAreaChartCH2O = () => {
   const [chartData, setChartData] = useState([]);
 
-  // ✅ โหลดข้อมูลจาก localStorage (ถ้ามี)
+  // ✅ โหลดข้อมูลจาก sessionStorage (ถ้ามี)
   useEffect(() => {
-    const savedData = localStorage.getItem("ch2o_data");
+    const savedData = sessionStorage.getItem("ch2o_data");
     if (savedData) {
       setChartData(JSON.parse(savedData));
     } else {
@@ -48,8 +48,8 @@ const LargeScaleAreaChartCH2O = () => {
         const newData = [...prevData, generateCH2OData()];
         if (newData.length > 50) newData.shift(); // จำกัดข้อมูลไม่ให้เยอะเกินไป
 
-        // ✅ บันทึกข้อมูลลงใน localStorage
-        localStorage.setItem("ch2o_data", JSON.stringify(newData));
+        // ✅ บันทึกข้อมูลลงใน sessionStorage
+        sessionStorage.setItem("ch2o_data", JSON.stringify(newData));
 
         return newData;
       });

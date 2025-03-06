@@ -28,7 +28,7 @@ const LoginSecurity = () => {
     }
 
     try {
-      const accessToken = localStorage.getItem("access_token");
+      const accessToken = sessionStorage.getItem("access_token");
       if (!accessToken) {
         setError("คุณยังไม่ได้เข้าสู่ระบบ");
         return;

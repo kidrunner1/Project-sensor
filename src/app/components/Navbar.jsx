@@ -16,8 +16,8 @@
 
 //   useEffect(() => {
 //     const fetchUserDetails = async () => {
-//       const accessToken = localStorage.getItem("access_token");
-//       const userId = localStorage.getItem("user_id");
+//       const accessToken = sessionStorage.getItem("access_token");
+//       const userId = sessionStorage.getItem("user_id");
 
 //       if (!accessToken || !userId) {
 //         setIsAuthenticated(false);
@@ -148,8 +148,8 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      const accessToken = localStorage.getItem("access_token");
-      const userId = localStorage.getItem("user_id");
+      const accessToken = sessionStorage.getItem("access_token");
+      const userId = sessionStorage.getItem("user_id");
 
       if (!accessToken || !userId) {
         setIsAuthenticated(false);

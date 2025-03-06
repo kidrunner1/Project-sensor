@@ -13,7 +13,7 @@ const menuItems = [
       {
         icon: <FaHome />,
         label: "Home",
-        url: "/Home",
+        url: "/HomePage",
         hasDropdown: false,
       },
       {
@@ -50,9 +50,8 @@ const Sidebar = () => {
     <div className="flex">
       {/* Sidebar Container */}
       <div
-        className={`h-screen bg-gray-900 p-5 pt-8 relative duration-300 ${
-          isOpen ? "w-60" : "w-20"
-        }`}
+        className={`h-screen bg-gray-900 p-5 pt-8 relative duration-300 ${isOpen ? "w-60" : "w-20"
+          }`}
       >
         {/* ปุ่ม Toggle */}
         <button
@@ -69,22 +68,21 @@ const Sidebar = () => {
 
         {/* Menu Items */}
         <div className="mt-4 text-sm">
-          {menuItems.map((i) => (
+          {menuItems?.map((i) => (
             <div className="flex flex-col gap-2 text-center text-white" key={i.title}>
               <span className={`hidden lg:block text-white font-light my-4 ml-2 uppercase tracking-wide ${!isOpen && "hidden"}`}>
                 {i.title}
               </span>
+              
               {i.items.map((item, index) => (
                 <div key={item.label}>
                   {item.hasDropdown ? (
                     // Dropdown Menu
                     <button
                       onClick={() => toggleDropdown(index)}
-                      className={`flex items-center ${
-                        isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full ${
-                        openDropdown === index ? "bg-gray-800" : ""
-                      }`}
+                      className={`flex items-center ${isOpen ? "justify-start" : "justify-center"
+                        } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full ${openDropdown === index ? "bg-gray-800" : ""
+                        }`}
                     >
                       {item.icon}
                       {isOpen && <span>{item.label}</span>}
@@ -98,9 +96,8 @@ const Sidebar = () => {
                     // Link Menu
                     <Link
                       href={item.url}
-                      className={`flex items-center ${
-                        isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full`}
+                      className={`flex items-center ${isOpen ? "justify-start" : "justify-center"
+                        } gap-4 text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-800 w-full`}
                     >
                       {item.icon}
                       {isOpen && <span>{item.label}</span>}

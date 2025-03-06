@@ -79,9 +79,9 @@ import ipconfig from "@/app/ipconfig";
 const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
 
 export async function refreshAccessToken() {
-    const refreshToken = localStorage.getItem("refresh_token");
-    const userId = localStorage.getItem("user_id");
-    const currentAccessToken = localStorage.getItem("access_token");
+    const refreshToken = sessionStorage.getItem("refresh_token");
+    const userId = sessionStorage.getItem("user_id");
+    const currentAccessToken = sessionStorage.getItem("access_token");
 
     if (!refreshToken || !userId) {
         console.warn("❌ ไม่มี Refresh Token หรือ User ID → ต้องให้ผู้ใช้ Login ใหม่");
@@ -125,22 +125,22 @@ export async function refreshAccessToken() {
         // ❌ ตรวจสอบว่า new_access_token ไม่ใช่ refresh_token
         if (newAccessToken === refreshToken) {
             console.error("❌ new_access_token ที่ได้รับมาเป็น refresh_token ซึ่งผิดพลาด!");
-            localStorage.clear();
+            sessionStorage.clear();
             return null;
         }
 
         // ✅ ถ้ามี new_access_token ให้ใช้แทนค่าเดิม
         if (newAccessToken) {
-            localStorage.setItem("access_token", newAccessToken);
-            localStorage.setItem("access_expires_time", accessExpires);
-            localStorage.setItem("refresh_token", newRefreshToken);
-            localStorage.setItem("refresh_expires_time", refreshExpires);
-            localStorage.setItem("user_status", user_status);
+            sessionStorage.setItem("access_token", newAccessToken);
+            sessionStorage.setItem("access_expires_time", accessExpires);
+            sessionStorage.setItem("refresh_token", newRefreshToken);
+            sessionStorage.setItem("refresh_expires_time", refreshExpires);
+            sessionStorage.setItem("user_status", user_status);
 
             if (company_exist) {
-                localStorage.setItem("company_id", company_id);
+                sessionStorage.setItem("company_id", company_id);
             } else {
-                localStorage.removeItem("company_id");
+                sessionStorage.removeItem("company_id");
             }
 
             console.log("✅ Access Token ถูกอัปเดตเรียบร้อยแล้ว:", newAccessToken);
@@ -154,7 +154,7 @@ export async function refreshAccessToken() {
 
         if (error.response?.status === 401) {
             console.warn("🔄 Refresh Token หมดอายุ → ผู้ใช้ต้อง Login ใหม่");
-            localStorage.clear();
+            sessionStorage.clear();
             return null;
         }
 

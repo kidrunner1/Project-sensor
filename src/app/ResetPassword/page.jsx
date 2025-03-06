@@ -13,8 +13,8 @@ export default function ResetPasswordPage() {
     const router = useRouter();
 
     useEffect(() => {
-        const storedUserId = localStorage.getItem("forgot_user_id");
-        const storedOtp = localStorage.getItem("forgot_otp");
+        const storedUserId = sessionStorage.getItem("forgot_user_id");
+        const storedOtp = sessionStorage.getItem("forgot_otp");
 
         if (!storedUserId || !storedOtp) {
             Swal.fire({
@@ -57,8 +57,8 @@ export default function ResetPasswordPage() {
                 icon: "success",
                 confirmButtonText: "ไปที่ Login"
             }).then(() => {
-                localStorage.removeItem("forgot_user_id");
-                localStorage.removeItem("forgot_otp");
+                sessionStorage.removeItem("forgot_user_id");
+                sessionStorage.removeItem("forgot_otp");
                 router.push("/");
             });
         } catch (error) {
