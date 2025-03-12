@@ -43,3 +43,21 @@ body {
   height: 100vh;
   width: 100%;
 }
+
+/* Glassmorphism */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  color: white;
+}
+
+/* Neumorphism */
+.neumorphism {
+  background: #1e1e1e;
+  box-shadow: 5px 5px 15px #141414, -5px -5px 15px #2a2a2a;
+  border-radius: 12px;
+  padding: 15px;
+}

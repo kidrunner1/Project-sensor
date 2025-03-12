@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
 
         if (!token) {
             console.warn("🔴 No access token found, redirecting to login...");
-            router.replace("/login");
+            router.replace("/");
             return;
         }
 

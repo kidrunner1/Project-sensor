@@ -1,108 +1,104 @@
 "use client";
+import React, { useEffect, useRef } from "react";
+import * as echarts from "echarts";
 
-import React, { useState, useEffect } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+// ✅ ฟังก์ชันสุ่มสีสำหรับแต่ละก๊าซ
+const getRandomColor = () => {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
 
-// ✅ ค่าปลอดภัยของฟอร์มาลดีไฮด์ (ppm)
-const SAFE_LIMIT = 0.1;
+const LineChartGas = ({ gasData, selectedSensor }) => {
+  const chartRef = useRef(null);
+  let myChart = useRef(null);
 
-// ✅ Mock Data: ข้อมูลเริ่มต้นของวัน
-const initialMockData = [
-  { time: "00:00", ch2o: 0.05 },
-  { time: "02:00", ch2o: 0.07 },
-  { time: "04:00", ch2o: 0.06 },
-  { time: "06:00", ch2o: 0.08 },
-  { time: "08:00", ch2o: 0.1 },
-  { time: "10:00", ch2o: 0.12 }, // 🚨 ค่าสูง
-  { time: "12:00", ch2o: 0.14 }, // 🚨 ค่าสูง
-  { time: "14:00", ch2o: 0.09 },
-  { time: "16:00", ch2o: 0.08 },
-  { time: "18:00", ch2o: 0.06 },
-  { time: "20:00", ch2o: 0.05 },
-  { time: "22:00", ch2o: 0.04 },
-];
-
-// ✅ สุ่มค่าฟอร์มาลดีไฮด์ใหม่ เพื่อใช้ใน Realtime
-const generateCH2OData = () => ({
-  time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-  ch2o: parseFloat((Math.random() * 0.15).toFixed(3)), // ค่าสุ่มระหว่าง 0 - 0.15 ppm
-});
-
-const LargeScaleAreaChartCH2O = () => {
-  const [chartData, setChartData] = useState([]);
-
-  // ✅ โหลดข้อมูลจาก sessionStorage (ถ้ามี)
   useEffect(() => {
-    const savedData = sessionStorage.getItem("ch2o_data");
-    if (savedData) {
-      setChartData(JSON.parse(savedData));
-    } else {
-      setChartData(initialMockData); // ใช้ Mock Data ถ้ายังไม่มีข้อมูล
+    if (!chartRef.current || gasData.length === 0) return;
+
+    if (!myChart.current) {
+      myChart.current = echarts.init(chartRef.current);
     }
-  }, []);
 
-  // ✅ ใช้ useEffect เพื่ออัปเดตกราฟทุก ๆ 5 วินาที
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setChartData((prevData) => {
-        const newData = [...prevData, generateCH2OData()];
-        if (newData.length > 50) newData.shift(); // จำกัดข้อมูลไม่ให้เยอะเกินไป
+    // ✅ สร้าง dataset สำหรับ ECharts
+    const gasNames = [...new Set(gasData.map((gas) => gas.param))]; // ✅ ดึงชื่อก๊าซที่ไม่ซ้ำ
+    const colors = gasNames.reduce((acc, gas) => ({ ...acc, [gas]: getRandomColor() }), {});
 
-        // ✅ บันทึกข้อมูลลงใน sessionStorage
-        sessionStorage.setItem("ch2o_data", JSON.stringify(newData));
+    const timestamps = gasData[0]?.readings?.map((reading) =>
+      new Date(reading.timestamp).toLocaleString("th-TH", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    ) || [];
 
-        return newData;
-      });
-    }, 5000);
+    const seriesData = gasNames.map((gas) => ({
+      name: gas,
+      type: "line",
+      data: gasData
+        .find((g) => g.param === gas)
+        ?.readings.map((reading) => parseFloat(reading.value).toFixed(2)) || [], // ✅ แปลงเป็นทศนิยม 2 ตำแหน่ง
+      smooth: true,
+      itemStyle: { color: colors[gas] },
+    }));
 
-    return () => clearInterval(interval); // ล้าง interval เมื่อ component ถูก unmount
-  }, []);
+    // ✅ ตั้งค่า ECharts
+    const option = {
+      title: {
+        text: `ค่าก๊าซ (ppm) - Sensor: ${selectedSensor}`,
+        left: "center",
+        textStyle: { fontSize: 16, fontWeight: "bold" },
+      },
+      tooltip: {
+        trigger: "axis",
+        axisPointer: { type: "cross" },
+        formatter: (params) => {
+          let tooltipText = `<strong>${params[0].axisValue}</strong><br/>`;
+          params.forEach((item) => {
+            tooltipText += `${item.marker} ${item.seriesName}: <strong>${item.value}</strong> ppm<br/>`;
+          });
+          return tooltipText;
+        },
+      },
+      legend: { data: gasNames, bottom: 0 },
+      grid: { left: "10%", right: "10%", bottom: "15%", containLabel: true },
+      xAxis: {
+        type: "category",
+        data: timestamps,
+        axisLabel: { rotate: -30 },
+      },
+      yAxis: {
+        type: "value",
+        name: "ppm",
+        axisLabel: {
+          formatter: (value) => value.toFixed(2), // ✅ แสดงทศนิยม 2 ตำแหน่งบนแกน Y
+        },
+      },
+      series: seriesData,
+    };
+
+    myChart.current.setOption(option);
+    window.addEventListener("resize", () => myChart.current.resize());
+
+    return () => {
+      window.removeEventListener("resize", () => myChart.current.resize());
+    };
+  }, [gasData, selectedSensor]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 transition-all duration-500">
-      {/* ✅ Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lg font-semibold text-gray-800 dark:text-white">🌎 ค่าฟอร์มาลดีไฮด์ (CH₂O) - อัปเดตเรียลไทม์</h1>
-        <span className="text-sm text-gray-500 dark:text-gray-400">อัปเดตทุก 5 วินาที</span>
-      </div>
-
-      {/* ✅ กราฟ Area Chart */}
-      <ResponsiveContainer width="100%" height={500}>
-        <AreaChart data={chartData}>
-          <defs>
-            {/* ✅ Gradient สีให้ Area Chart ดูทันสมัย */}
-            <linearGradient id="colorCH2O" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="colorDanger" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" tick={{ fill: "#aaa" }} />
-          <YAxis label={{ value: "ppm", angle: -90, position: "insideLeft", fill: "#aaa" }} domain={[0, 0.15]} />
-          <Tooltip contentStyle={{ backgroundColor: "#333", color: "#fff", borderRadius: "5px" }} />
-          <ReferenceLine y={SAFE_LIMIT} stroke="red" strokeDasharray="3 3" label="⚠️ ค่าอันตราย" />
-
-          {/* ✅ Area Chart */}
-          <Area type="monotone" dataKey="ch2o" stroke="#4F46E5" fillOpacity={1} fill="url(#colorCH2O)" />
-
-          {/* ✅ ถ้าค่าเกิน 0.1 ppm ให้ใช้สีแดง */}
-          {chartData.some((d) => d.ch2o > SAFE_LIMIT) && (
-            <Area type="monotone" dataKey="ch2o" stroke="#EF4444" fillOpacity={1} fill="url(#colorDanger)" />
-          )}
-        </AreaChart>
-      </ResponsiveContainer>
-
-      {/* ✅ คำแนะนำเพิ่มเติม */}
-      <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
-        <p>📌 ค่าฟอร์มาลดีไฮด์ที่สูงเกิน 0.1 ppm อาจมีความเสี่ยงต่อสุขภาพ ควรตรวจสอบการระบายอากาศ</p>
-      </div>
+    <div className="bg-white dark:bg-gray-900 rounded-lg p-4">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
+        📊 ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
+      </h2>
+      <div ref={chartRef} className="w-full h-[500px]" />
     </div>
   );
 };
 
-export default LargeScaleAreaChartCH2O;
+export default LineChartGas;

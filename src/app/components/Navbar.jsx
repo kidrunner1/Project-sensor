@@ -129,47 +129,28 @@
 
 // export default Navbar;
 
+// USE Zustand เพื่อ เรียก API USER แค่ครั้งเดียว 
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logoutUser } from "@/app/serviveAPI/Logout/logoutService";
-import { getUserData } from "@/app/serviveAPI/GetUser/serviceUser";
+import { useUserStore } from "@/app/serviveAPI/GetUser/serviceUser"; // ✅ Import Zustand Store
 import Swal from "sweetalert2";
 import Image from "next/image";
-import Link from "next/link";
 import { FiCalendar, FiBell, FiMessageSquare, FiChevronDown } from "react-icons/fi";
 
 const Navbar = () => {
-  const [userData, setUserData] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, fetchUserData, clearUser } = useUserStore(); // ✅ ใช้ Zustand
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      const accessToken = sessionStorage.getItem("access_token");
+    if (!user) {
       const userId = sessionStorage.getItem("user_id");
-
-      if (!accessToken || !userId) {
-        setIsAuthenticated(false);
-        return;
-      }
-
-      try {
-        const userData = await getUserData(userId);
-        if (userData) {
-          setUserData(userData);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    fetchUserDetails();
-  }, []);
+      if (userId) fetchUserData(userId); // ✅ โหลด User Data จาก Zustand
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isDropdownOpen) {
@@ -186,8 +167,9 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       const response = await logoutUser();
-      setIsAuthenticated(false);
-      setUserData(null);
+      clearUser(); // ✅ เคลียร์ Zustand Store
+      sessionStorage.removeItem("access_token"); // ✅ เคลียร์ Token
+      sessionStorage.removeItem("user_id");
 
       Swal.fire({
         title: "ออกจากระบบสำเร็จ!",
@@ -211,11 +193,11 @@ const Navbar = () => {
     <nav className="bg-gray-100 px-6 py-4 flex justify-between items-center shadow-md">
       {/* Left: Welcome Message */}
       <h1 className="text-xl font-semibold text-gray-800">
-        DOGNOSE Good morning, <span className="font-bold">{userData?.name || "User"}!</span>
+        DOGNOSE ยินดีต้อนรับผู้ใช้งาน <span className="font-bold">{user?.name || "User"}!</span>
       </h1>
 
       {/* Right: Icons & Profile */}
-      {isAuthenticated && (
+      {user && (
         <div className="flex items-center gap-6">
           {/* Icons */}
           <FiCalendar className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
@@ -224,12 +206,9 @@ const Navbar = () => {
 
           {/* Profile Image + Dropdown */}
           <div className="relative">
-            <button
-              onClick={() => setDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2"
-            >
+            <button onClick={() => setDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2">
               <Image
-                src={userData?.profileImage || "/images/profile.png"}
+                src={user?.profileImage || "/images/profile.png"}
                 alt="User"
                 width={40}
                 height={40}
@@ -242,8 +221,8 @@ const Navbar = () => {
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white shadow-lg rounded-md py-2 dropdown-menu">
                 <div className="px-5 py-4 bg-gray-100">
-                  <p className="text-sm font-semibold text-gray-900">{userData?.name}</p>
-                  <p className="text-xs text-gray-600">{userData?.email}</p>
+                  <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                  <p className="text-xs text-gray-600">{user?.email}</p>
                 </div>
                 <ul className="py-2">
                   <li>
@@ -265,3 +244,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

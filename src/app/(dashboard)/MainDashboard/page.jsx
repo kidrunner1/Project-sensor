@@ -1,54 +1,41 @@
 "use client";
 
 import React, { Suspense, lazy, useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchWeather } from "@/app/serviveAPI/Weather/weatherService";
-import { useAuth } from "@/app/context/AuthContext"; // ✅ ใช้ Context API
+import { useAuth } from "@/app/context/AuthContext";
+import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
 
 // ✅ Lazy Load Components
-const WeatherCard = lazy(() => import("../../components/WeatherCard"));
-const WeeklyWeatherCard = lazy(() => import("../../components/WeeklyWeatherCard"));
 const TempChart = lazy(() => import("../../components/TempChart"));
-const AttendanceChart = lazy(() => import("../../components/AttendanceChart"));
-const LineChartCH2O = lazy(() => import("../../components/LineChartCH2O"));
-const PieChartCH2O = lazy(() => import("../../components/PieChartCH2O"));
+const WindChart = lazy(() => import("../../components/WindChart"));
+const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
 const LineChartOzone = lazy(() => import("../../components/LineChartOzone"));
-
-const mockWeeklyWeather = [
-  { dayName: "Sun", icon: "https://cdn.weatherapi.com/weather/64x64/day/113.png", tempMax: 34, tempMin: 25, chanceOfRain: 10 },
-  { dayName: "Mon", icon: "https://cdn.weatherapi.com/weather/64x64/day/116.png", tempMax: 32, tempMin: 24, chanceOfRain: 20 },
-  { dayName: "Tue", icon: "https://cdn.weatherapi.com/weather/64x64/day/308.png", tempMax: 30, tempMin: 23, chanceOfRain: 80 },
-  { dayName: "Wed", icon: "https://cdn.weatherapi.com/weather/64x64/day/296.png", tempMax: 29, tempMin: 22, chanceOfRain: 50 },
-  { dayName: "Thu", icon: "https://cdn.weatherapi.com/weather/64x64/day/119.png", tempMax: 31, tempMin: 23, chanceOfRain: 30 },
-  { dayName: "Fri", icon: "https://cdn.weatherapi.com/weather/64x64/night/113.png", tempMax: 28, tempMin: 21, chanceOfRain: 10 },
-  { dayName: "Sat", icon: "https://cdn.weatherapi.com/weather/64x64/day/176.png", tempMax: 27, tempMin: 20, chanceOfRain: 40 },
-];
 
 const HomePageTest = () => {
   const { isAuthenticated } = useAuth();
+  const { sensorData, loading, error, fetchSensorData } = useSensorStore();
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoadingSensor, setIsLoadingSensor] = useState(false); // ✅ สถานะโหลดข้อมูล Sensor
+  const [selectedSensor, setSelectedSensor] = useState(""); // ✅ ตัวเลือก Sensor ที่เลือก
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
 
-  // ✅ ใช้ React Query โหลดข้อมูล
-  const { data, isLoading } = useQuery({
-    queryKey: ["weather", "Bangkok"],
-    queryFn: () => fetchWeather("Bangkok", 7),
-    staleTime: 1000 * 60 * 10,
-    retry: 3,
-  });
+    // ✅ ดึง user_id และ company_id จาก sessionStorage
+    const userId = sessionStorage.getItem("user_id");
+    const companyId = sessionStorage.getItem("company_id");
+    const accessToken = sessionStorage.getItem("access_token");
 
-  // ✅ ถ้า API ใช้ไม่ได้ ให้ใช้ Mock Data
-  const weatherData = data?.current || {
-    temperature: 30,
-    humidity: 50,
-    wind: 10,
-    condition: "Unknown",
-    icon: "https://cdn.weatherapi.com/weather/64x64/day/113.png",
-  };
-  const forecast = data?.forecast || mockWeeklyWeather;
+    if (userId && companyId && accessToken) {
+      fetchSensorData(userId, companyId, accessToken);
+    }
+  }, [fetchSensorData]);
+
+  useEffect(() => {
+    // ✅ ตั้งค่า Default Sensor ตัวแรก
+    if (Object.keys(sensorData).length > 0 && !selectedSensor) {
+      setSelectedSensor(Object.keys(sensorData)[0]);
+    }
+  }, [sensorData]);
 
   if (!isMounted) {
     return <FullPageSkeleton />;
@@ -64,55 +51,89 @@ const HomePageTest = () => {
 
   return (
     <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto">
-      {/* ✅ Charts Section (Responsive Grid) */}
-        <h2 className="text-3xl font-bold  md:text-left">Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          {/* ✅ Temperature Chart */}
+      {/* ✅ แถบบนสุด: Dashboard + Dropdown */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold">Dashboard</h2>
+
+        {/* ✅ Dropdown Sensor - ขยับไปด้านขวา */}
+        <div className="relative">
+          <label className="block text-gray-700 font-semibold text-right">เลือก Sensor:</label>
+          <select
+            value={selectedSensor}
+            onChange={(e) => setSelectedSensor(e.target.value)}
+            className="w-48 p-2 border rounded-md bg-white shadow-lg hover:cursor-pointer"
+          >
+            {Object.keys(sensorData).map((sensorId) => (
+              <option key={sensorId} value={sensorId}>
+                {sensorId}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* ✅ Temperature Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
         <div className="min-h-[300px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <Suspense fallback={<SkeletonChart />}>
-            {isLoading ? <SkeletonChart /> : <TempChart location="Bangkok" />}
+            {loading || !selectedSensor ? <SkeletonChart /> : (
+              <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />
+            )}
           </Suspense>
         </div>
 
         {/* ✅ Attendance Chart */}
         <div className="min-h-[300px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <Suspense fallback={<SkeletonChart />}>
-            {isLoading ? <SkeletonChart /> : <AttendanceChart />}
+            {loading || !selectedSensor ? (
+              <SkeletonChart />
+            ) : (
+              <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
+            )}
           </Suspense>
         </div>
+
       </div>
 
       {/* ✅ Pollution Charts Section */}
-      <div className="grid  gap-4 w-full">
+      <div className="grid gap-4 w-full">
         {/* ✅ Ozone Chart */}
-        <div className="min-h-[500px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          
+        {/* <div className="min-h-[500px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
           <Suspense fallback={<SkeletonChart />}>
-            {isLoading ? <SkeletonChart /> : <LineChartOzone />}
+            {loading || !selectedSensor ? <SkeletonChart /> : <LineChartOzone sensorData={sensorData[selectedSensor]} />}
           </Suspense>
-        </div>
+        </div> */}
 
         {/* ✅ Formaldehyde Chart */}
         <div className="min-h-[500px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          
           <Suspense fallback={<SkeletonChart />}>
-            {isLoading ? <SkeletonChart /> : <LineChartCH2O />}
+            {loading || isLoadingSensor || !selectedSensor ? (
+              <SkeletonChart />
+            ) : sensorData[selectedSensor] && sensorData[selectedSensor].gas.length > 0 ? (
+              (() => {
+                // ✅ กรองเฉพาะก๊าซที่มี readings จริง ๆ
+                const validGasData = sensorData[selectedSensor].gas.filter((gas) => gas.readings.length > 0);
+                return validGasData.length > 0 ? (
+                  <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
+                ) : (
+                  <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่มี readings</p>
+                );
+              })()
+            ) : (
+              <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
+            )}
           </Suspense>
+
         </div>
       </div>
     </div>
   );
 };
 
-// ✅ Skeleton UI - แสดงระหว่างโหลดข้อมูล
-const Skeleton = () => <div className="animate-pulse bg-gray-700 h-10 w-full rounded-md"></div>;
+// ✅ Skeleton UI
 const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
-
-// ✅ Skeleton UI สำหรับ Full Page
 const FullPageSkeleton = () => (
   <div className="flex flex-col gap-4 p-4">
-    <Skeleton />
-    <Skeleton />
     <SkeletonChart />
     <SkeletonChart />
   </div>

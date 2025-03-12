@@ -23,15 +23,17 @@ export default function DashboardLayout({ children }) {
                     </Head>
 
                     <div className="flex w-screen h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden">
-                        {/* Sidebar */}
-                        <div className="h-screen hidden md:block">
+                        {/* ✅ Sidebar (อยู่ด้านบนของ Navbar) */}
+                        <div className="h-screen hidden md:block z-20">
                             <Sidebar />
                         </div>
 
                         {/* Main Content Area */}
                         <div className="flex flex-col flex-1 h-screen">
-                            {/* Navbar */}
-                            <Navbar />
+                            <div className="z-10">
+                                {/* Navbar */}
+                                <Navbar />
+                            </div>
 
                             {/* Content Section */}
                             <div className="flex flex-col flex-1 overflow-y-auto p-4">

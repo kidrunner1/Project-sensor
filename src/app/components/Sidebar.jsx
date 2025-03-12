@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { FaHome, FaChartBar, FaCogs, FaTasks } from "react-icons/fa";
+import { IoIosArrowDown, IoMdSettings  } from "react-icons/io";
 
 // ✅ รายการเมนู Sidebar
 const menuItems = [
@@ -23,12 +24,12 @@ const menuItems = [
         hasDropdown: true,
         subItems: [
           { label: "Overview", url: "/MainDashboard" },
-          { label: "Live Network", url: "/Analytics" },
-          { label: "To-Do’s", url: "/Todos" },
+          { label: "Analytics", url: "/Analytics" },
+          { label: "Report", url: "/LoadDataPage" },
         ],
       },
       {
-        icon: <FaCogs />,
+        icon: <IoMdSettings />,
         label: "Setting",
         url: "/Setting",
         hasDropdown: false,
@@ -73,7 +74,7 @@ const Sidebar = () => {
               <span className={`hidden lg:block text-white font-light my-4 ml-2 uppercase tracking-wide ${!isOpen && "hidden"}`}>
                 {i.title}
               </span>
-              
+
               {i.items.map((item, index) => (
                 <div key={item.label}>
                   {item.hasDropdown ? (
@@ -87,9 +88,7 @@ const Sidebar = () => {
                       {item.icon}
                       {isOpen && <span>{item.label}</span>}
                       {isOpen && (
-                        <span className={`ml-auto transition-transform ${openDropdown === index ? "rotate-180" : ""}`}>
-                          ▼
-                        </span>
+                        <IoIosArrowDown className={`ml-auto transition-transform ${openDropdown === index ? "rotate-180" : ""}`} />
                       )}
                     </button>
                   ) : (
