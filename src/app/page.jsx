@@ -253,6 +253,20 @@ export default function Login() {
     }
   };
 
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === "ArrowRight" && index < otp.length - 1) {
+      document.getElementById(`otp-${index + 1}`)?.focus();
+    }
+
+    if (e.key === "ArrowLeft" && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       <main className="flex flex-col items-center justify-center w-full flex-1 px-6 md:px-20 text-center">
@@ -363,10 +377,12 @@ export default function Login() {
                   maxLength={1}
                   value={num}
                   onChange={(e) => handleOtp(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, index)} // ✅ จัดการ Key Events
                   className="w-12 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               ))}
             </div>
+
             <button onClick={handleOtpSubmit}
               className="mt-5 text-white border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800">
               ยืนยัน OTP

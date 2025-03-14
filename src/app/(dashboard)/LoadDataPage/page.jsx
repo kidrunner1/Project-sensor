@@ -7,11 +7,10 @@ export default function Dashboard() {
   const [accessToken, setAccessToken] = useState(null);
   const [userId, setUserId] = useState(null);
   const [companyId, setCompanyId] = useState(null);
-  const [selectedSensor, setSelectedSensor] = useState(""); // ✅ เซ็นเซอร์ที่เลือก
-  const [isLoadingSensor, setIsLoadingSensor] = useState(false); // ✅ สถานะโหลดข้อมูล Sensor
+  const [selectedSensor, setSelectedSensor] = useState("");
+  const [isLoadingSensor, setIsLoadingSensor] = useState(false);
 
   useEffect(() => {
-    // ✅ อัปเดตข้อมูลจาก sessionStorage
     const updateAuthData = () => {
       const newAccessToken = sessionStorage.getItem("access_token");
       const newUserId = sessionStorage.getItem("user_id");
@@ -28,28 +27,37 @@ export default function Dashboard() {
       }
     };
 
-    // ✅ ตรวจสอบทุกๆ 10 วินาที
     const interval = setInterval(updateAuthData, 10000);
-
-    // ✅ โหลดข้อมูลครั้งแรก
     updateAuthData();
-
-    return () => clearInterval(interval); // ✅ ป้องกัน Memory Leak
+    return () => clearInterval(interval);
   }, [accessToken, userId, companyId, fetchSensorData]);
 
-  // ✅ ฟังก์ชันเปลี่ยน Sensor พร้อมหน่วงเวลา 5 วินาที
   const handleSensorChange = (e) => {
-    setIsLoadingSensor(true); // ✅ เปิดการโหลด
+    setIsLoadingSensor(true);
     const newSensor = e.target.value;
     setTimeout(() => {
       setSelectedSensor(newSensor);
-      setIsLoadingSensor(false); // ✅ ปิดการโหลดเมื่อครบ 5 วินาที
+      setIsLoadingSensor(false);
     }, 2000);
+  };
+
+  // ✅ ฟังก์ชันแปลง timestamp ให้อ่านง่ายขึ้น
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "ไม่มีข้อมูล";
+    return new Date(timestamp).toLocaleString("th-TH", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
   };
 
   return (
     <div className="p-5">
-      <h1 className="text-xl font-bold">📡 Sensor Dashboard</h1>
+      <h1 className="text-3xl font-bold">SENSOR REPORT</h1>
 
       {loading && <p>🔄 กำลังโหลดข้อมูล Sensor...</p>}
       {error && <p className="text-red-500">❌ {error}</p>}
@@ -61,7 +69,7 @@ export default function Dashboard() {
           value={selectedSensor}
           onChange={handleSensorChange}
           className="block w-full mt-2 p-2 border rounded-md"
-          disabled={isLoadingSensor} // 🔴 ป้องกันการเลือกซ้ำขณะโหลด
+          disabled={isLoadingSensor}
         >
           <option value="">🔽 กรุณาเลือก Sensor</option>
           {Object.keys(sensorData).map((sensorId) => (
@@ -84,7 +92,7 @@ export default function Dashboard() {
           <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
             <h2 className="text-lg font-bold">ข้อมูล Sensor: {selectedSensor}</h2>
 
-            {/* Environmental Parameters */}
+            {/* ✅ Environmental Parameters */}
             <h3 className="mt-3 text-md font-semibold text-gray-700">Environmental Parameters</h3>
             <table className="w-full mt-2 border-collapse border border-gray-300">
               <thead>
@@ -98,23 +106,25 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {sensorData[selectedSensor].environmental.map((param) => {
-                  const lastReading = param.readings[param.readings.length - 1] || {};
-                  return (
-                    <tr key={`env-${param.id_param}`} className="text-center">
-                      <td className="border p-2">{param.id_param}</td>
-                      <td className="border p-2">Environmental</td>
-                      <td className="border p-2">{param.param}</td>
-                      <td className="border p-2">{lastReading.value || "N/A"}</td>
-                      <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                      <td className="border p-2">{lastReading.timestamp || "N/A"}</td>
-                    </tr>
-                  );
-                })}
+                {sensorData[selectedSensor].environmental
+                  .filter((param) => param.readings.some((reading) => reading.value !== null)) // ✅ กรองเฉพาะค่าที่มี Value
+                  .map((param) => {
+                    const lastReading = param.readings.find((r) => r.value !== null) || {};
+                    return (
+                      <tr key={`env-${param.id_param}`} className="text-center">
+                        <td className="border p-2">{param.id_param}</td>
+                        <td className="border p-2">Environmental</td>
+                        <td className="border p-2">{param.param}</td>
+                        <td className="border p-2">{lastReading.value || "N/A"}</td>
+                        <td className="border p-2">{param.readings[0]?.unit || ""}</td>
+                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
 
-            {/* Gas Parameters */}
+            {/* ✅ Gas Parameters */}
             <h3 className="mt-3 text-md font-semibold text-gray-700">Gas Parameters</h3>
             <table className="w-full mt-2 border-collapse border border-gray-300">
               <thead>
@@ -128,19 +138,21 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {sensorData[selectedSensor].gas.map((param) => {
-                  const lastReading = param.readings[param.readings.length - 1] || {};
-                  return (
-                    <tr key={`gas-${param.id_param}`} className="text-center">
-                      <td className="border p-2">{param.id_param}</td>
-                      <td className="border p-2">Gas</td>
-                      <td className="border p-2">{param.param}</td>
-                      <td className="border p-2">{lastReading.value || "N/A"}</td>
-                      <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                      <td className="border p-2">{lastReading.timestamp || "N/A"}</td>
-                    </tr>
-                  );
-                })}
+                {sensorData[selectedSensor].gas
+                  .filter((param) => param.readings.some((reading) => reading.value !== null)) // ✅ กรองเฉพาะค่าที่มี Value
+                  .map((param) => {
+                    const lastReading = param.readings.find((r) => r.value !== null) || {};
+                    return (
+                      <tr key={`gas-${param.id_param}`} className="text-center">
+                        <td className="border p-2">{param.id_param}</td>
+                        <td className="border p-2">Gas</td>
+                        <td className="border p-2">{param.param}</td>
+                        <td className="border p-2">{lastReading.value || "N/A"}</td>
+                        <td className="border p-2">{param.readings[0]?.unit || ""}</td>
+                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

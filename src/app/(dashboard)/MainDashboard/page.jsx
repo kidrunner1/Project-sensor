@@ -3,24 +3,34 @@
 import React, { Suspense, lazy, useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
+import { FiRefreshCcw } from "react-icons/fi";
+import Swal from "sweetalert2";
+import Select from "react-select";
 
 // ✅ Lazy Load Components
 const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
-const LineChartOzone = lazy(() => import("../../components/LineChartOzone"));
+
+// ✅ UI Skeleton Components
+const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
+const FullPageSkeleton = () => (
+  <div className="flex flex-col gap-4 p-4">
+    <SkeletonChart />
+    <SkeletonChart />
+  </div>
+);
 
 const HomePageTest = () => {
   const { isAuthenticated } = useAuth();
   const { sensorData, loading, error, fetchSensorData } = useSensorStore();
   const [isMounted, setIsMounted] = useState(false);
-  const [isLoadingSensor, setIsLoadingSensor] = useState(false); // ✅ สถานะโหลดข้อมูล Sensor
-  const [selectedSensor, setSelectedSensor] = useState(""); // ✅ ตัวเลือก Sensor ที่เลือก
+  const [isLoadingSensor, setIsLoadingSensor] = useState(false);
+  const [selectedSensor, setSelectedSensor] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
 
-    // ✅ ดึง user_id และ company_id จาก sessionStorage
     const userId = sessionStorage.getItem("user_id");
     const companyId = sessionStorage.getItem("company_id");
     const accessToken = sessionStorage.getItem("access_token");
@@ -31,11 +41,41 @@ const HomePageTest = () => {
   }, [fetchSensorData]);
 
   useEffect(() => {
-    // ✅ ตั้งค่า Default Sensor ตัวแรก
     if (Object.keys(sensorData).length > 0 && !selectedSensor) {
       setSelectedSensor(Object.keys(sensorData)[0]);
     }
   }, [sensorData]);
+
+  // ✅ ฟังก์ชันรีเฟรชข้อมูล
+  const handleRefresh = () => {
+    setIsLoadingSensor(true);
+    const userId = sessionStorage.getItem("user_id");
+    const companyId = sessionStorage.getItem("company_id");
+    const accessToken = sessionStorage.getItem("access_token");
+
+    if (userId && companyId && accessToken) {
+      fetchSensorData(userId, companyId, accessToken);
+    }
+
+    setTimeout(() => {
+      setIsLoadingSensor(false);
+      Swal.fire({
+        title: "รีเฟรชข้อมูลสำเร็จ!",
+        text: "ข้อมูล Sensor ได้รับการอัปเดตแล้ว",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    }, 2000);
+  };
+
+  // // ✅ Auto Refresh ทุก 30 วินาที
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     handleRefresh();
+  //   }, 60000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   if (!isMounted) {
     return <FullPageSkeleton />;
@@ -51,92 +91,69 @@ const HomePageTest = () => {
 
   return (
     <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto">
-      {/* ✅ แถบบนสุด: Dashboard + Dropdown */}
+      {/* ✅ Header: Dashboard & Refresh */}
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Dashboard</h2>
+        <h2 className="text-3xl font-bold">SENSOR DASHBOARD</h2>
 
-        {/* ✅ Dropdown Sensor - ขยับไปด้านขวา */}
-        <div className="relative">
-          <label className="block text-gray-700 font-semibold text-right">เลือก Sensor:</label>
-          <select
-            value={selectedSensor}
-            onChange={(e) => setSelectedSensor(e.target.value)}
-            className="w-48 p-2 border rounded-md bg-white shadow-lg hover:cursor-pointer"
+        <div className="flex items-center gap-3">
+          {/* ✅ Dropdown Sensor (ใช้ react-select เพื่อให้ค้นหาได้) */}
+          <Select
+            options={Object.keys(sensorData).map((sensorId) => ({
+              value: sensorId,
+              label: sensorId,
+            }))}
+            value={{ value: selectedSensor, label: selectedSensor }}
+            onChange={(e) => setSelectedSensor(e.value)}
+            className="w-48"
+          />
+
+          {/* ✅ ปุ่ม Refresh */}
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center gap-2 hover:bg-blue-600 transition"
           >
-            {Object.keys(sensorData).map((sensorId) => (
-              <option key={sensorId} value={sensorId}>
-                {sensorId}
-              </option>
-            ))}
-          </select>
+            <FiRefreshCcw className="text-lg" />
+            รีเฟรช
+          </button>
         </div>
       </div>
 
-      {/* ✅ Temperature Chart */}
+      {/* ✅ Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        <div className="min-h-[300px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <Suspense fallback={<SkeletonChart />}>
-            {loading || !selectedSensor ? <SkeletonChart /> : (
-              <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />
-            )}
-          </Suspense>
-        </div>
+        <Suspense fallback={<SkeletonChart />}>
+          {loading || !selectedSensor ? <SkeletonChart /> : <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />}
+        </Suspense>
 
-        {/* ✅ Attendance Chart */}
-        <div className="min-h-[300px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <Suspense fallback={<SkeletonChart />}>
-            {loading || !selectedSensor ? (
-              <SkeletonChart />
-            ) : (
-              <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
-            )}
-          </Suspense>
-        </div>
-
+        <Suspense fallback={<SkeletonChart />}>
+          {loading || !selectedSensor ? <SkeletonChart /> : <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />}
+        </Suspense>
       </div>
 
-      {/* ✅ Pollution Charts Section */}
-      <div className="grid gap-4 w-full">
-        {/* ✅ Ozone Chart */}
-        {/* <div className="min-h-[500px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <Suspense fallback={<SkeletonChart />}>
-            {loading || !selectedSensor ? <SkeletonChart /> : <LineChartOzone sensorData={sensorData[selectedSensor]} />}
-          </Suspense>
-        </div> */}
+      {/* ✅ Gas Chart */}
+      <div className="shadow-xl">
+      <Suspense fallback={<SkeletonChart />}>
+        {loading || isLoadingSensor || !selectedSensor ? (
+          <SkeletonChart />
+        ) : sensorData[selectedSensor] && Array.isArray(sensorData[selectedSensor].gas) ? (
+          (() => {
+            // ✅ กรองเฉพาะก๊าซที่มี readings และ value จริงๆ
+            const validGasData = sensorData[selectedSensor].gas.filter(
+              (gas) => gas.readings && gas.readings.some((reading) => reading.value !== null)
+            );
 
-        {/* ✅ Formaldehyde Chart */}
-        <div className="min-h-[500px] h-auto w-full p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <Suspense fallback={<SkeletonChart />}>
-            {loading || isLoadingSensor || !selectedSensor ? (
-              <SkeletonChart />
-            ) : sensorData[selectedSensor] && sensorData[selectedSensor].gas.length > 0 ? (
-              (() => {
-                // ✅ กรองเฉพาะก๊าซที่มี readings จริง ๆ
-                const validGasData = sensorData[selectedSensor].gas.filter((gas) => gas.readings.length > 0);
-                return validGasData.length > 0 ? (
-                  <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
-                ) : (
-                  <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่มี readings</p>
-                );
-              })()
+            return validGasData.length > 0 ? (
+              <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
             ) : (
-              <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
-            )}
-          </Suspense>
-
-        </div>
+              <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
+            );
+          })()
+        ) : (
+          <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
+        )}
+      </Suspense>
       </div>
     </div>
   );
 };
-
-// ✅ Skeleton UI
-const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
-const FullPageSkeleton = () => (
-  <div className="flex flex-col gap-4 p-4">
-    <SkeletonChart />
-    <SkeletonChart />
-  </div>
-);
 
 export default HomePageTest;

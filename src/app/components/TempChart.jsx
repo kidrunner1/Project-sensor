@@ -4,7 +4,7 @@ import ReactECharts from "echarts-for-react";
 const TempChart = ({ sensorData }) => {
   if (!sensorData || !sensorData.environmental) return <p>❌ ไม่มีข้อมูล Sensor</p>;
 
-  const temperatureData = sensorData.environmental.find((entry) => 
+  const temperatureData = sensorData.environmental.find((entry) =>
     entry.param.toLowerCase().includes("temperature")
   );
 
@@ -23,6 +23,9 @@ const TempChart = ({ sensorData }) => {
     });
   };
 
+  // ✅ ดึงค่าข้อมูลล่าสุด
+  const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
+
   const option = {
     title: {
       left: "center",
@@ -40,14 +43,15 @@ const TempChart = ({ sensorData }) => {
     },
     tooltip: {
       trigger: "axis",
+      axisPointer: { type: "cross" },
       formatter: (params) => {
         const index = params[0].dataIndex;
         const timestamp = formatTimestamp(temperatureData.readings[index]?.timestamp);
         return `
           <div style="text-align: center;">
-            <strong>Temperature</strong><br/>
-            Value: ${params[0].value}°C<br/>
-            Timestamp: ${timestamp}
+            <strong>อุณหภูมิ</strong><br/>
+            ${timestamp}<br/>
+            <strong>${params[0].value.toFixed(2)}</strong>°C
           </div>
         `;
       },
@@ -55,10 +59,14 @@ const TempChart = ({ sensorData }) => {
     xAxis: {
       type: "category",
       data: temperatureData.readings.map((reading) => formatTimestamp(reading.timestamp)),
+      axisLabel: { rotate: -20 },
     },
     yAxis: {
       type: "value",
       name: "อุณหภูมิ (°C)",
+      axisLabel: {
+        formatter: (value) => `${value.toFixed(2)}°C`,
+      },
     },
     series: [
       {
@@ -69,13 +77,39 @@ const TempChart = ({ sensorData }) => {
         showSymbol: true,
         symbolSize: 10,
         itemStyle: { color: "#ffcc00" },
+        areaStyle: {
+          color: "rgba(255, 204, 0, 0.3)",
+        },
+        markPoint: {
+          data: [
+            { type: "max", name: "สูงสุด", symbolSize: 14, itemStyle: { color: "red" } },
+            { type: "min", name: "ต่ำสุด", symbolSize: 14, itemStyle: { color: "blue" } },
+          ],
+        },
+        markLine: {
+          data: [
+            { yAxis: 25, name: "อุณหภูมิปลอดภัย", lineStyle: { color: "green", type: "dashed" } },
+          ],
+        },
       },
     ],
   };
 
   return (
-    <div className="bg-white rounded-xl w-full h-full p-4">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">อุณหภูมิจาก Sensor</h2>
+    <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
+      {/* ✅ แสดงอุณหภูมิล่าสุดแบบเด่นชัด */}
+      <div className="text-start text-gray-800 dark:text-gray-100 mb-4">
+        <h2 className="text-xl font-bold">
+          อุณหภูมิล่าสุด: <span className="text-2xl text-red-500">
+            {lastReading?.value.toFixed(2) || "N/A"}°C
+          </span>
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          อัปเดตล่าสุด: {formatTimestamp(lastReading?.timestamp)}
+        </p>
+      </div>
+
+      {/* ✅ แสดงกราฟ */}
       <ReactECharts option={option} style={{ height: "400px", width: "100%" }} />
     </div>
   );

@@ -2,7 +2,15 @@
 import React, { useEffect, useRef } from "react";
 import * as echarts from "echarts";
 
-// ✅ ฟังก์ชันสุ่มสีสำหรับแต่ละก๊าซ
+// ✅ ค่ามาตรฐานปลอดภัยของแต่ละก๊าซ (ppm)
+const SAFE_LIMITS = {
+  ch2o: 0.1,  // ฟอร์มาลดีไฮด์ (ppm)
+  o3: 0.05,   // โอโซน (ppm)
+  co: 9,      // คาร์บอนมอนอกไซด์ (ppm)
+  no2: 0.1,   // ไนโตรเจนไดออกไซด์ (ppm)
+};
+
+// ✅ ฟังก์ชันสุ่มสี
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
   let color = "#";
@@ -23,10 +31,11 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       myChart.current = echarts.init(chartRef.current);
     }
 
-    // ✅ สร้าง dataset สำหรับ ECharts
-    const gasNames = [...new Set(gasData.map((gas) => gas.param))]; // ✅ ดึงชื่อก๊าซที่ไม่ซ้ำ
+    // ✅ ดึงชื่อก๊าซจากข้อมูล
+    const gasNames = [...new Set(gasData.map((gas) => gas.param))];
     const colors = gasNames.reduce((acc, gas) => ({ ...acc, [gas]: getRandomColor() }), {});
 
+    // ✅ แปลง Timestamp เป็น `DD/MM/YYYY HH:mm:ss`
     const timestamps = gasData[0]?.readings?.map((reading) =>
       new Date(reading.timestamp).toLocaleString("th-TH", {
         day: "2-digit",
@@ -38,15 +47,45 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       })
     ) || [];
 
-    const seriesData = gasNames.map((gas) => ({
-      name: gas,
-      type: "line",
-      data: gasData
-        .find((g) => g.param === gas)
-        ?.readings.map((reading) => parseFloat(reading.value).toFixed(2)) || [], // ✅ แปลงเป็นทศนิยม 2 ตำแหน่ง
-      smooth: true,
-      itemStyle: { color: colors[gas] },
-    }));
+    // ✅ สร้าง Series ข้อมูลแต่ละก๊าซ
+    const seriesData = gasNames.map((gas) => {
+      const gasReadings = gasData.find((g) => g.param === gas)?.readings || [];
+      const values = gasReadings.map((reading) => parseFloat(reading.value).toFixed(2)) || [];
+
+      return {
+        name: gas,
+        type: "line",
+        smooth: true,
+        showSymbol: false,
+        itemStyle: { color: colors[gas] },
+        lineStyle: { width: 2 },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: colors[gas] },
+            { offset: 1, color: "rgba(255,255,255,0)" },
+          ]),
+        },
+        data: values,
+        markPoint: {
+          data: [
+            { type: "max", name: "สูงสุด", symbol: "triangle", symbolSize: 12, itemStyle: { color: "red" } },
+            { type: "min", name: "ต่ำสุด", symbol: "triangle", symbolSize: 12, itemStyle: { color: "blue" } },
+          ],
+        },
+        animationDuration: 2000,
+      };
+    });
+
+    // ✅ Reference Lines สำหรับค่ามาตรฐานปลอดภัย
+    const referenceLines = Object.entries(SAFE_LIMITS)
+      .filter(([gas]) => gasNames.includes(gas))
+      .map(([gas, limit]) => ({
+        name: `${gas.toUpperCase()} Safe Limit`,
+        type: "line",
+        data: Array(timestamps.length).fill(limit),
+        lineStyle: { type: "dashed", width: 2, color: "red" },
+        label: { show: true, position: "right", formatter: `${gas.toUpperCase()} ⚠️` },
+      }));
 
     // ✅ ตั้งค่า ECharts
     const option = {
@@ -66,8 +105,12 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
           return tooltipText;
         },
       },
-      legend: { data: gasNames, bottom: 0 },
-      grid: { left: "10%", right: "10%", bottom: "15%", containLabel: true },
+      legend: {
+        data: [...gasNames, ...referenceLines.map((line) => line.name)],
+        bottom: 0,
+        selectedMode: "multiple",
+      },
+      grid: { left: "10%", right: "10%", bottom: "20%", containLabel: true },
       xAxis: {
         type: "category",
         data: timestamps,
@@ -76,11 +119,9 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       yAxis: {
         type: "value",
         name: "ppm",
-        axisLabel: {
-          formatter: (value) => value.toFixed(2), // ✅ แสดงทศนิยม 2 ตำแหน่งบนแกน Y
-        },
+        axisLabel: { formatter: (value) => parseFloat(value).toFixed(2) },
       },
-      series: seriesData,
+      series: [...seriesData, ...referenceLines],
     };
 
     myChart.current.setOption(option);
@@ -94,9 +135,18 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg p-4">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
-        📊 ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
+        ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
       </h2>
       <div ref={chartRef} className="w-full h-[500px]" />
+
+      {/* ✅ คำแนะนำด้านล่างกราฟ */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        ⚠️ <strong>คำแนะนำ:</strong> ค่าก๊าซที่สูงกว่ามาตรฐานอาจส่งผลกระทบต่อสุขภาพ
+        <br />
+        🟢 ปลอดภัย: อยู่ในช่วงปกติ  
+        🔵 เฝ้าระวัง: อาจมีผลกระทบในระยะยาว  
+        🔴 อันตราย: ควรหลีกเลี่ยงพื้นที่และใช้หน้ากากป้องกัน  
+      </p>
     </div>
   );
 };

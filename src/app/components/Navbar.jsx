@@ -135,20 +135,23 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { logoutUser } from "@/app/serviveAPI/Logout/logoutService";
-import { useUserStore } from "@/app/serviveAPI/GetUser/serviceUser"; // ✅ Import Zustand Store
+import { useUserStore } from "@/app/serviveAPI/GetUser/serviceUser";
+import { useNotificationStore } from "@/app/serviveAPI/Notifications/ServiceNotification"; // ✅ Import Zustand Store สำหรับแจ้งเตือน
 import Swal from "sweetalert2";
 import Image from "next/image";
-import { FiCalendar, FiBell, FiMessageSquare, FiChevronDown } from "react-icons/fi";
+import { FiCalendar, FiBell, FiChevronDown } from "react-icons/fi";
 
 const Navbar = () => {
-  const { user, fetchUserData, clearUser } = useUserStore(); // ✅ ใช้ Zustand
+  const { user, fetchUserData, clearUser } = useUserStore(); // ✅ ใช้ Zustand Store ของ User
+  const { notifications, fetchNotifications, markAsRead } = useNotificationStore(); // ✅ ใช้ Zustand Store ของ Notification
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isNotificationOpen, setNotificationOpen] = useState(false); // ✅ State สำหรับแจ้งเตือน
   const router = useRouter();
 
   useEffect(() => {
     if (!user) {
       const userId = sessionStorage.getItem("user_id");
-      if (userId) fetchUserData(userId); // ✅ โหลด User Data จาก Zustand
+      if (userId) fetchUserData(userId);
     }
   }, [user]);
 
@@ -164,11 +167,16 @@ const Navbar = () => {
     }
   }, [isDropdownOpen]);
 
+  // ✅ โหลดแจ้งเตือนเมื่อ Component โหลด
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   const handleLogout = async () => {
     try {
       const response = await logoutUser();
-      clearUser(); // ✅ เคลียร์ Zustand Store
-      sessionStorage.removeItem("access_token"); // ✅ เคลียร์ Token
+      clearUser();
+      sessionStorage.removeItem("access_token");
       sessionStorage.removeItem("user_id");
 
       Swal.fire({
@@ -200,9 +208,47 @@ const Navbar = () => {
       {user && (
         <div className="flex items-center gap-6">
           {/* Icons */}
-          <FiCalendar className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
-          <FiBell className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
-          <FiMessageSquare className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
+          {/* 🔔 Notification Icon */}
+          <div className="relative">
+            <button
+              onClick={() => setNotificationOpen(!isNotificationOpen)}
+              className="relative"
+            >
+              <FiBell className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
+              {/* 🔴 Badge แสดงจำนวนแจ้งเตือนที่ยังไม่ได้อ่าน */}
+              {notifications.filter((n) => !n.read).length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {notifications.filter((n) => !n.read).length}
+                </span>
+              )}
+            </button>
+
+            {/* 🔽 Dropdown Notifications */}
+            {isNotificationOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-md py-2 dropdown-menu">
+                <div className="px-5 py-3 bg-gray-100">
+                  <p className="text-sm font-semibold text-gray-900">การแจ้งเตือน</p>
+                </div>
+                <ul className="max-h-60 overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <li
+                        key={notification.id}
+                        className={`px-5 py-3 text-sm cursor-pointer hover:bg-gray-200 transition duration-200 ${
+                          notification.read ? "text-gray-600" : "text-black font-bold"
+                        }`}
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        {notification.message}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="px-5 py-3 text-sm text-gray-500">ไม่มีแจ้งเตือน</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
 
           {/* Profile Image + Dropdown */}
           <div className="relative">
@@ -244,4 +290,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 

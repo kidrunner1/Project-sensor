@@ -10,6 +10,9 @@ const WindChart = ({ sensorData, selectedSensor }) => {
   const [windSpeed, setWindSpeed] = useState(0);
   const [lastTimestamp, setLastTimestamp] = useState("ไม่มีข้อมูล");
 
+  // ✅ กำหนดหน่วยการแสดงผล (เปลี่ยนได้ m/s หรือ km/h)
+  const unit = "m/s"; // หรือเปลี่ยนเป็น "km/h"
+
   useEffect(() => {
     if (!chartRef.current || !sensorData || !selectedSensor) return;
 
@@ -30,7 +33,13 @@ const WindChart = ({ sensorData, selectedSensor }) => {
 
     // ✅ ดึงค่าล่าสุดจาก readings
     const lastReading = windSpeedParam?.readings?.[windSpeedParam.readings.length - 1] || {};
-    const windSpeedValue = lastReading?.value ? parseFloat(lastReading.value.toFixed(2)) : 0; // ✅ แสดงทศนิยม 2 ตำแหน่ง
+    let windSpeedValue = lastReading?.value ? parseFloat(lastReading.value.toFixed(2)) : 0;
+
+    // ✅ แปลงหน่วย km/h ถ้าจำเป็น
+    if (unit === "km/h") {
+      windSpeedValue = (windSpeedValue * 3.6).toFixed(2);
+    }
+
     const lastTimestampConverted = lastReading?.timestamp
       ? new Date(lastReading.timestamp).toLocaleString("th-TH")
       : "ไม่มีข้อมูล";
@@ -39,7 +48,11 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     setWindSpeed(windSpeedValue);
     setLastTimestamp(lastTimestampConverted);
 
-    // ✅ อัปเดตค่าใน ECharts
+    // ✅ สีของ Gauge ตามระดับลม
+    const gaugeColor =
+      windSpeedValue < 3 ? "#67e0e3" : windSpeedValue < 7 ? "#37a2da" : "#fd666d";
+
+    // ✅ อัปเดตค่าใน ECharts 
     const option = {
       title: {
         text: `เซ็นเซอร์ ${selectedSensor}`,
@@ -57,69 +70,54 @@ const WindChart = ({ sensorData, selectedSensor }) => {
             lineStyle: {
               width: 30,
               color: [
-                [0.3, "#67e0e3"],
-                [0.7, "#37a2da"],
-                [1, "#fd666d"],
+                [0.3, "#67e0e3"],  // ปลอดภัย 🟢
+                [0.7, "#37a2da"],  // ปกติ 🔵
+                [1, "#fd666d"],     // อันตราย 🔴
               ],
             },
           },
           pointer: {
             itemStyle: {
-              color: "auto",
-            },
-          },
-          axisTick: {
-            distance: -30,
-            length: 8,
-            lineStyle: {
-              color: "#fff",
-              width: 2,
-            },
-          },
-          splitLine: {
-            distance: -30,
-            length: 30,
-            lineStyle: {
-              color: "#fff",
-              width: 4,
+              color: gaugeColor,
             },
           },
           axisLabel: {
             color: "inherit",
             distance: 40,
-            fontSize: 20,
+            fontSize: 18,
           },
           detail: {
             valueAnimation: true,
-            formatter: `{value} m/s`, // ✅ แสดงค่าเป็น m/s
+            formatter: `{value} ${unit}`, // ✅ แสดงค่า m/s หรือ km/h
             color: "inherit",
+            fontSize: 24,
           },
-          data: [
-            {
-              value: windSpeed, // ✅ ใช้ค่าจาก State ที่มีทศนิยม 2 ตำแหน่ง
-            },
-          ],
+          animationDuration: 1000, // ✅ เพิ่ม Animation ให้หมุน Smooth
+          data: [{ value: windSpeed }],
         },
       ],
     };
 
     myChart.current.setOption(option);
-    myChart.current.resize(); // ✅ ปรับขนาดเมื่อโหลด
+    myChart.current.resize();
 
     window.addEventListener("resize", () => {
-      myChart.current.resize(); // ✅ ปรับขนาดเมื่อเปลี่ยนหน้าจอ
+      myChart.current.resize();
     });
 
     return () => {
       window.removeEventListener("resize", () => myChart.current.resize());
     };
+
+    // ✅ **เอา `unit` ออกจาก dependencies**
   }, [sensorData, selectedSensor, windSpeed]);
 
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 h-[500px] flex flex-col justify-between">
+    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 h-[500px] flex flex-col justify-between transition-all duration-500 shadow-md">
       {/* ✅ ข้อมูลแสดงผลเพิ่มเติม */}
       <div className="text-start">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">ความเร็วลม (m/s)</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">ความเร็วลม ({unit})</h1>
 
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">อัปเดตล่าสุด: {lastTimestamp}</p>
       </div>
@@ -129,7 +127,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
 
       {/* ✅ คำอธิบายเพิ่มเติม */}
       <div className="text-center text-sm text-gray-600 dark:text-gray-300">
-        <p>ความเร็วลมที่สูงอาจมีผลต่อโครงสร้างหรือระบบที่ใช้ลม</p>
+        <p>⚠️ ความเร็วลมที่สูงอาจมีผลต่อโครงสร้างหรือระบบที่ใช้ลม</p>
       </div>
     </div>
   );
