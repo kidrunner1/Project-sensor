@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [companyId, setCompanyId] = useState(null);
   const [selectedSensor, setSelectedSensor] = useState("");
   const [isLoadingSensor, setIsLoadingSensor] = useState(false);
+  const [currentTimestamp, setCurrentTimestamp] = useState(new Date().toISOString());
 
   useEffect(() => {
     const updateAuthData = () => {
@@ -27,10 +28,15 @@ export default function Dashboard() {
       }
     };
 
-    const interval = setInterval(updateAuthData, 10000);
     updateAuthData();
-    return () => clearInterval(interval);
   }, [accessToken, userId, companyId, fetchSensorData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTimestamp(new Date().toISOString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSensorChange = (e) => {
     setIsLoadingSensor(true);
@@ -41,7 +47,6 @@ export default function Dashboard() {
     }, 2000);
   };
 
-  // ✅ ฟังก์ชันแปลง timestamp ให้อ่านง่ายขึ้น
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "ไม่มีข้อมูล";
     return new Date(timestamp).toLocaleString("th-TH", {
@@ -62,7 +67,6 @@ export default function Dashboard() {
       {loading && <p>🔄 กำลังโหลดข้อมูล Sensor...</p>}
       {error && <p className="text-red-500">❌ {error}</p>}
 
-      {/* ✅ Dropdown เลือก Sensor */}
       <div className="mt-4">
         <label className="text-gray-700 font-semibold">เลือก Sensor:</label>
         <select
@@ -80,7 +84,6 @@ export default function Dashboard() {
         </select>
       </div>
 
-      {/* ✅ แสดง Loading Effect เมื่อเปลี่ยน Sensor */}
       {isLoadingSensor ? (
         <div className="flex justify-center items-center mt-6">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -107,7 +110,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {sensorData[selectedSensor].environmental
-                  .filter((param) => param.readings.some((reading) => reading.value !== null)) // ✅ กรองเฉพาะค่าที่มี Value
+                  .filter((param) => param.readings.some((reading) => reading.value !== null))
                   .map((param) => {
                     const lastReading = param.readings.find((r) => r.value !== null) || {};
                     return (
@@ -115,9 +118,13 @@ export default function Dashboard() {
                         <td className="border p-2">{param.id_param}</td>
                         <td className="border p-2">Environmental</td>
                         <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">{lastReading.value || "N/A"}</td>
+                        <td className="border p-2">
+                          {lastReading.value !== null ? parseFloat(lastReading.value).toFixed(2) : "N/A"}
+                        </td>
                         <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                        <td className="border p-2">
+                          {formatTimestamp(lastReading.timestamp) || formatTimestamp(currentTimestamp)}
+                        </td>
                       </tr>
                     );
                   })}
@@ -139,7 +146,7 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {sensorData[selectedSensor].gas
-                  .filter((param) => param.readings.some((reading) => reading.value !== null)) // ✅ กรองเฉพาะค่าที่มี Value
+                  .filter((param) => param.readings.some((reading) => reading.value !== null))
                   .map((param) => {
                     const lastReading = param.readings.find((r) => r.value !== null) || {};
                     return (
@@ -147,9 +154,13 @@ export default function Dashboard() {
                         <td className="border p-2">{param.id_param}</td>
                         <td className="border p-2">Gas</td>
                         <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">{lastReading.value || "N/A"}</td>
+                        <td className="border p-2">
+                          {lastReading.value !== null ? parseFloat(lastReading.value).toFixed(2) : "N/A"}
+                        </td>
                         <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                        <td className="border p-2">
+                          {formatTimestamp(lastReading.timestamp) || formatTimestamp(currentTimestamp)}
+                        </td>
                       </tr>
                     );
                   })}
