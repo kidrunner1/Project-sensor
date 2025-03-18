@@ -11,16 +11,18 @@ const TempChart = ({ sensorData }) => {
   if (!temperatureData) return <p>❌ ไม่มีข้อมูลอุณหภูมิสำหรับ Sensor นี้</p>;
 
   // ✅ ฟังก์ชันแปลง timestamp
+  // ✅ ฟังก์ชันแปลง timestamp ปีแค่ 2 หลัก
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "N/A";
-    return new Date(timestamp).toLocaleString("th-TH", {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = (date.getFullYear() + 543).toString().slice(-2); // เอา 2 หลักท้าย
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   // ✅ ดึงค่าข้อมูลล่าสุด
@@ -105,7 +107,7 @@ const TempChart = ({ sensorData }) => {
           </span>
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          อัปเดตล่าสุด: {formatTimestamp(lastReading?.timestamp)}
+          อัปเดตล่าสุด : {formatTimestamp(lastReading?.timestamp)}
         </p>
       </div>
 

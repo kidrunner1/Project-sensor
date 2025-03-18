@@ -110,25 +110,29 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {sensorData[selectedSensor].environmental
-                  .filter((param) => param.readings.some((reading) => reading.value !== null))
                   .map((param) => {
-                    const lastReading = param.readings.find((r) => r.value !== null) || {};
+                    const validReadings = param.readings
+                      .filter((reading) => reading.value !== null && reading.timestamp)
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // เรียงจากล่าสุด
+
+                    if (validReadings.length === 0) return null; // ข้ามถ้าไม่มี value
+
+                    const lastReading = validReadings[0]; // ข้อมูลล่าสุด
+
                     return (
                       <tr key={`env-${param.id_param}`} className="text-center">
                         <td className="border p-2">{param.id_param}</td>
                         <td className="border p-2">Environmental</td>
                         <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">
-                          {lastReading.value !== null ? parseFloat(lastReading.value).toFixed(2) : "N/A"}
-                        </td>
-                        <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                        <td className="border p-2">
-                          {formatTimestamp(lastReading.timestamp) || formatTimestamp(currentTimestamp)}
-                        </td>
+                        <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
+                        <td className="border p-2">{lastReading.unit || ""}</td>
+                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
                       </tr>
                     );
                   })}
               </tbody>
+
+
             </table>
 
             {/* ✅ Gas Parameters */}
@@ -146,21 +150,23 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {sensorData[selectedSensor].gas
-                  .filter((param) => param.readings.some((reading) => reading.value !== null))
                   .map((param) => {
-                    const lastReading = param.readings.find((r) => r.value !== null) || {};
+                    const validReadings = param.readings
+                      .filter((reading) => reading.value !== null && reading.timestamp)
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // ล่าสุดก่อน
+
+                    if (validReadings.length === 0) return null;
+
+                    const lastReading = validReadings[0];
+
                     return (
                       <tr key={`gas-${param.id_param}`} className="text-center">
                         <td className="border p-2">{param.id_param}</td>
                         <td className="border p-2">Gas</td>
                         <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">
-                          {lastReading.value !== null ? parseFloat(lastReading.value).toFixed(2) : "N/A"}
-                        </td>
-                        <td className="border p-2">{param.readings[0]?.unit || ""}</td>
-                        <td className="border p-2">
-                          {formatTimestamp(lastReading.timestamp) || formatTimestamp(currentTimestamp)}
-                        </td>
+                        <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
+                        <td className="border p-2">{lastReading.unit || ""}</td>
+                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
                       </tr>
                     );
                   })}
