@@ -90,7 +90,7 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
     // ✅ ตั้งค่า ECharts
     const option = {
       title: {
-        text: `ค่าก๊าซ (ppm) - Sensor: ${selectedSensor}`,
+        text: `ค่าก๊าซ (PPM) - Sensor: ${selectedSensor}`,
         left: "center",
         textStyle: { fontSize: 16, fontWeight: "bold" },
       },

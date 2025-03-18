@@ -69,14 +69,6 @@ const HomePageTest = () => {
     }, 2000);
   };
 
-  // // ✅ Auto Refresh ทุก 30 วินาที
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     handleRefresh();
-  //   }, 60000);
-  //   return () => clearInterval(interval);
-  // }, []);
-
   if (!isMounted) {
     return <FullPageSkeleton />;
   }
@@ -120,37 +112,61 @@ const HomePageTest = () => {
 
       {/* ✅ Charts Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        {/* ซ้าย: Temp Chart */}
         <Suspense fallback={<SkeletonChart />}>
-          {loading || !selectedSensor ? <SkeletonChart /> : <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />}
+          {loading || !selectedSensor ? (
+            <SkeletonChart />
+          ) : (
+            <TempChart
+              sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }}
+            />
+          )}
         </Suspense>
 
-        <Suspense fallback={<SkeletonChart />}>
-          {loading || !selectedSensor ? <SkeletonChart /> : <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />}
-        </Suspense>
+        {/* ขวา: แบ่ง 2 ชั้น */}
+        <div className="flex flex-col gap-4 h-full">
+          {/* บน: WindChart */}
+          <Suspense fallback={<SkeletonChart />}>
+            {loading || !selectedSensor ? (
+              <SkeletonChart />
+            ) : (
+              <WindChart
+                sensorData={sensorData}
+                selectedSensor={selectedSensor}
+              />
+            )}
+          </Suspense>
+
+          {/* ล่าง: อื่นๆ เช่น ตารางหรือกราฟเพิ่มเติม */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex justify-center items-center h-[200px]">
+            <p className="text-gray-700 dark:text-gray-300">เพิ่ม Component อื่น ๆ ตรงนี้</p>
+          </div>
+        </div>
       </div>
+
 
       {/* ✅ Gas Chart */}
       <div className="shadow-xl">
-      <Suspense fallback={<SkeletonChart />}>
-        {loading || isLoadingSensor || !selectedSensor ? (
-          <SkeletonChart />
-        ) : sensorData[selectedSensor] && Array.isArray(sensorData[selectedSensor].gas) ? (
-          (() => {
-            // ✅ กรองเฉพาะก๊าซที่มี readings และ value จริงๆ
-            const validGasData = sensorData[selectedSensor].gas.filter(
-              (gas) => gas.readings && gas.readings.some((reading) => reading.value !== null)
-            );
+        <Suspense fallback={<SkeletonChart />}>
+          {loading || isLoadingSensor || !selectedSensor ? (
+            <SkeletonChart />
+          ) : sensorData[selectedSensor] && Array.isArray(sensorData[selectedSensor].gas) ? (
+            (() => {
+              // ✅ กรองเฉพาะก๊าซที่มี readings และ value จริงๆ
+              const validGasData = sensorData[selectedSensor].gas.filter(
+                (gas) => gas.readings && gas.readings.some((reading) => reading.value !== null)
+              );
 
-            return validGasData.length > 0 ? (
-              <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
-            ) : (
-              <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
-            );
-          })()
-        ) : (
-          <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
-        )}
-      </Suspense>
+              return validGasData.length > 0 ? (
+                <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
+              ) : (
+                <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
+              );
+            })()
+          ) : (
+            <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
+          )}
+        </Suspense>
       </div>
     </div>
   );
