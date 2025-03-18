@@ -2,7 +2,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
 // ✅ URL API
-const API_URL = `http://${ipconfig.API_HOST}/api/auth/login`;
+const API_URL = `https://${ipconfig.API_HOST}/api/auth/login`;
 
 // ✅ ฟังก์ชันสำหรับล็อกอินผู้ใช้
 export async function loginUser(identifier, password, method = 'email') {

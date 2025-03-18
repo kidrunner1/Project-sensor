@@ -2,7 +2,7 @@
 // import ipconfig from "@/app/ipconfig";
 
 // // ✅ URL API
-// const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
+// const REFRESH_API = `https://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
 
 // export async function refreshAccessToken() {
 //     const refreshToken = localStorage.getItem("refresh_token");
@@ -76,7 +76,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
 // ✅ URL API
-const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
+const REFRESH_API = `https://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
 
 export async function refreshAccessToken() {
     const refreshToken = sessionStorage.getItem("refresh_token");

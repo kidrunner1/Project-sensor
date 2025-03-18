@@ -1,4 +1,4 @@
-const BASE_URL = "http://api.weatherapi.com/v1/forecast.json";
+const BASE_URL = "https://api.weatherapi.com/v1/forecast.json";
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
 const MAX_RETRIES = 3; // 🔄 ลองใหม่สูงสุด 3 ครั้ง

@@ -1,7 +1,7 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
-const ADD_COMPANY_ID_API = `http://${ipconfig.API_HOST}/api/auth/add-company-id`;
+const ADD_COMPANY_ID_API = `https://${ipconfig.API_HOST}/api/auth/add-company-id`;
 
 /**
  * ส่งคำขอ Add Company ID ไปยัง API

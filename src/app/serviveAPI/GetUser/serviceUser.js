@@ -1,7 +1,7 @@
 // import axios from "axios";
 // import ipconfig from "@/app/ipconfig";
 
-// const GETUSER_API = `http://${ipconfig.API_HOST}/api/auth/get-user`
+// const GETUSER_API = `https://${ipconfig.API_HOST}/api/auth/get-user`
 
 // export const getUserData = async (userId) => {
 //     try {
@@ -33,8 +33,8 @@ import { create } from "zustand";
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
-const GETUSER_API = `http://${ipconfig.API_HOST}/api/auth/get-user`;
-const UPDATEUSER_API = `http://${ipconfig.API_HOST}/api/auth/update-user`;
+const GETUSER_API = `https://${ipconfig.API_HOST}/api/auth/get-user`;
+const UPDATEUSER_API = `https://${ipconfig.API_HOST}/api/auth/update-user`;
 
 export const useUserStore = create((set) => ({
     user: null,

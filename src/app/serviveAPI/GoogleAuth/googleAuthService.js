@@ -1,8 +1,8 @@
 import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
-const GOOGLE_AUTH_URL = `http://${ipconfig.API_HOST}/api/auth/google/login`;
-const GOOGLE_CALLBACK_URL = `http://${ipconfig.API_HOST}/api/auth/google/callback`;
+const GOOGLE_AUTH_URL = `https://${ipconfig.API_HOST}/api/auth/google/login`;
+const GOOGLE_CALLBACK_URL = `https://${ipconfig.API_HOST}/api/auth/google/callback`;
 
 // ✅ ฟังก์ชันเปิด Google Login เป็น Popup
 export function loginWithGooglePopup() {
@@ -14,7 +14,7 @@ export function loginWithGooglePopup() {
 
         // ✅ เปิด Popup Window
         const popup = window.open(
-            `http://localhost:8080/api/auth/google/login`,
+            `https://localhost:8080/api/auth/google/login`,
             "Google Login",
             `width=${width},height=${height},top=${top},left=${left}`
         );

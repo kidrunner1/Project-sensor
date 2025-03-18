@@ -3,7 +3,7 @@
 // import axios from "axios";
 // import ipconfig from "@/app/ipconfig";
 
-// const API_URL = "http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping";
+// const API_URL = "https://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping";
 
 // export const useSensorStore = create((set) => ({
 //   sensorData: {}, // เก็บข้อมูล Sensor โดยจัดให้อยู่ในรูปแบบ { sensorId: { environmental, gas } }
@@ -82,7 +82,7 @@
 //         throw new Error("❌ API_SENSOR ไม่ถูกต้องใน ipconfig");
 //       }
 
-//       const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+//       const API_URL = `https://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
 
 //       const response = await axios.post(
 //         API_URL,
@@ -140,7 +140,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
 // ✅ ใช้ Template Literal แทน
-const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+const API_URL = `https://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
 
 export const useSensorStore = create((set) => ({
   sensorData: {},

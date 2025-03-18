@@ -16,7 +16,7 @@
 // }
 
 // // URL สำหรับการเรียก API ลงทะเบียน
-// const API_URL = `http://${ipconfig.API_HOST}/api/users/register`;
+// const API_URL = `https://${ipconfig.API_HOST}/api/users/register`;
 
 // // ✅ ฟังก์ชันสำหรับลงทะเบียนผู้ใช้ "ธรรมดา"
 // export async function registerUser(name, email, phone, password, username) {
@@ -80,7 +80,7 @@ class UserRegister {
 }
 
 // ✅ URL API
-const API_URL = `http://${ipconfig.API_HOST}/api/auth/register`;
+const API_URL = `https://${ipconfig.API_HOST}/api/auth/register`;
 
 
 // ✅ ฟังก์ชันลงทะเบียนแบบ Manual (ลบ `: string` ออก)
