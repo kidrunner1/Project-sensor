@@ -61,4 +61,6 @@ export const useSensorStore = create((set) => ({
       set({ error: error.message, loading: false });
     }
   },
-}));
+}
+)
+);

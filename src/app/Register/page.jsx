@@ -48,8 +48,7 @@ const Register = () => {
     password: "รหัสผ่าน",
     confirmPassword: "ยืนยันรหัสผ่าน",
     phoneNumber: "เบอร์โทรศัพท์",
-    firstName: "ชื่อจริง",
-    lastName: "นามสกุล",
+    name: "ชื่อจริง",
   };
 
   const validateField = (name, value) => {
@@ -243,7 +242,6 @@ const Register = () => {
               </p>
             </form>
           </div>
-
 
           {/* RIGHT SECTION */}
           <div

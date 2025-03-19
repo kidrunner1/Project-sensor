@@ -69,7 +69,7 @@ export async function verifyOtp(userId, otp) {
         };
     } catch (error) {
         // ❌ จัดการข้อผิดพลาด
-        const errorMessage = error.response?.data?.message || error.message || "Unknown error occurred";
+        const errorMessage = error.response?.data?.message || error.message || "รหัส OTP ไม่ถูกต้อง";
         console.error("❌ OTP verification failed:", errorMessage);
         throw new Error(`OTP verification failed: ${errorMessage}`);
     }

@@ -35,45 +35,6 @@ export default function Login() {
     }
   }, []);
 
-
-  // const validateField = (name, value) => {
-  //   let error = '';
-
-  //   if (name === 'identifier') {
-  //     if (!value.trim()) {
-  //       error = 'กรุณากรอกชื่อผู้ใช้หรืออีเมล';
-  //     } else if (!/^[a-zA-Z0-9@.]+$/.test(value)) {
-  //       error = 'ชื่อผู้ใช้ต้องเป็น A-Z, a-z, 0-9 หรืออีเมลเท่านั้น';
-  //     }
-  //   }
-
-  //   if (name === 'password') {
-  //     if (!value.trim()) {
-  //       error = 'กรุณากรอกรหัสผ่าน';
-  //     } else if (value.length < 6) {
-  //       error = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-  //     }
-  //   }
-
-  //   setErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     [name]: error,
-  //   }));
-  // };
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   if (name === "identifier") setIdentifier(value);
-  //   if (name === "password") setPassword(value);
-
-  //   validateField(name, value); // ✅ ตรวจสอบค่าขณะพิมพ์
-  // };
-
-  // const handleBlur = (e) => {
-  //   const { name, value } = e.target;
-  //   validateField(name, value); // ✅ ตรวจสอบค่าทันทีที่ออกจากช่อง
-  // };
-
   // ✅ ฟังก์ชันตรวจสอบ Validation
   const validateInputs = () => {
     const newErrors = {};
