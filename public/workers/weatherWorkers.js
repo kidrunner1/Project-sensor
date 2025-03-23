@@ -2,7 +2,7 @@ self.onmessage = async (event) => {
     const { location, days } = event.data;
   
     try {
-      const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${location}&days=${days}`);
+      const response = await fetch(`http://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${location}&days=${days}`);
       const data = await response.json();
   
       self.postMessage({ weather: data.current, forecast: data.forecast.forecastday });
