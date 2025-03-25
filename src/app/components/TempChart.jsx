@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 
 const TempChart = ({ sensorData }) => {
@@ -7,6 +8,39 @@ const TempChart = ({ sensorData }) => {
   const temperatureData = sensorData.environmental.find((entry) =>
     entry.param.toLowerCase().includes("temperature")
   );
+
+  const [fakeClock, setFakeClock] = useState(new Date());
+  const baseTimestampRef = useRef(null);
+  const startClientTimeRef = useRef(null);
+
+  const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
+
+  // ✅ เช็คจริง ๆ ว่า timestamp เปลี่ยน
+  useEffect(() => {
+    if (!lastReading?.timestamp) return;
+
+    const newTimestamp = new Date(lastReading.timestamp);
+
+    if (
+      !baseTimestampRef.current ||
+      baseTimestampRef.current.getTime() !== newTimestamp.getTime()
+    ) {
+      baseTimestampRef.current = newTimestamp;
+      startClientTimeRef.current = new Date();
+    }
+  }, [lastReading?.timestamp]);
+
+  // ✅ ตั้ง fakeClock ให้เดินเองทุก 1 วิ
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (baseTimestampRef.current && startClientTimeRef.current) {
+        const diff = Date.now() - startClientTimeRef.current.getTime();
+        setFakeClock(new Date(baseTimestampRef.current.getTime() + diff));
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   if (!temperatureData) return <p>❌ ไม่มีข้อมูลอุณหภูมิสำหรับ Sensor นี้</p>;
 
@@ -24,9 +58,6 @@ const TempChart = ({ sensorData }) => {
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-
-  // ✅ ดึงค่าข้อมูลล่าสุด
-  const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
 
   const option = {
     title: {
@@ -82,17 +113,17 @@ const TempChart = ({ sensorData }) => {
         areaStyle: {
           color: "rgba(255, 204, 0, 0.3)",
         },
-        markPoint: {
-          data: [
-            { type: "max", name: "สูงสุด", symbolSize: 14, itemStyle: { color: "red" } },
-            { type: "min", name: "ต่ำสุด", symbolSize: 14, itemStyle: { color: "blue" } },
-          ],
-        },
-        markLine: {
-          data: [
-            { yAxis: 25, name: "อุณหภูมิปลอดภัย", lineStyle: { color: "green", type: "dashed" } },
-          ],
-        },
+        // markPoint: {
+        //   data: [
+        //     { type: "max", name: "สูงสุด", symbolSize: 14, itemStyle: { color: "red" } },
+        //     { type: "min", name: "ต่ำสุด", symbolSize: 14, itemStyle: { color: "blue" } },
+        //   ],
+        // },
+        // markLine: {
+        //   data: [
+        //     { yAxis: 25, name: "อุณหภูมิปลอดภัย", lineStyle: { color: "green", type: "dashed" } },
+        //   ],
+        // },
       },
     ],
   };
@@ -107,7 +138,7 @@ const TempChart = ({ sensorData }) => {
           </span>
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          อัปเดตล่าสุด : {formatTimestamp(lastReading?.timestamp)}
+          อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
         </p>
       </div>
 

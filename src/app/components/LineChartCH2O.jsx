@@ -1,16 +1,14 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 
-// ✅ ค่ามาตรฐานปลอดภัยของแต่ละก๊าซ (ppm)
 const SAFE_LIMITS = {
-  ch2o: 0.1,  // ฟอร์มาลดีไฮด์ (ppm)
-  o3: 0.05,   // โอโซน (ppm)
-  co: 9,      // คาร์บอนมอนอกไซด์ (ppm)
-  no2: 0.1,   // ไนโตรเจนไดออกไซด์ (ppm)
+  ch2o: 0.1,
+  o3: 0.05,
+  co: 9,
+  no2: 0.1,
 };
 
-// ✅ ฟังก์ชันสุ่มสี
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
   let color = "#";
@@ -24,6 +22,21 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
   const chartRef = useRef(null);
   let myChart = useRef(null);
 
+  const [fakeClock, setFakeClock] = useState(new Date());
+  const baseTimestampRef = useRef(null);
+  const startClientTimeRef = useRef(null);
+
+  // ✅ ให้เวลาขยับทุก 1 วินาที
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (baseTimestampRef.current && startClientTimeRef.current) {
+        const diff = Date.now() - startClientTimeRef.current.getTime();
+        setFakeClock(new Date(baseTimestampRef.current.getTime() + diff));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (!chartRef.current || gasData.length === 0) return;
 
@@ -31,11 +44,9 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       myChart.current = echarts.init(chartRef.current);
     }
 
-    // ✅ ดึงชื่อก๊าซจากข้อมูล
     const gasNames = [...new Set(gasData.map((gas) => gas.param))];
     const colors = gasNames.reduce((acc, gas) => ({ ...acc, [gas]: getRandomColor() }), {});
 
-    // ✅ แปลง Timestamp เป็น `DD/MM/YYYY HH:mm:ss`
     const timestamps = gasData[0]?.readings?.map((reading) =>
       new Date(reading.timestamp).toLocaleString("th-TH", {
         day: "2-digit",
@@ -47,7 +58,19 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       })
     ) || [];
 
-    // ✅ สร้าง Series ข้อมูลแต่ละก๊าซ
+    // ✅ ตั้งเวลาฐานเมื่อมีข้อมูลใหม่จริง
+    const latestReading = gasData[0]?.readings?.[gasData[0].readings.length - 1];
+    if (latestReading?.timestamp) {
+      const newTimestamp = new Date(latestReading.timestamp);
+      if (
+        !baseTimestampRef.current ||
+        baseTimestampRef.current.getTime() !== newTimestamp.getTime()
+      ) {
+        baseTimestampRef.current = newTimestamp;
+        startClientTimeRef.current = new Date();
+      }
+    }
+
     const seriesData = gasNames.map((gas) => {
       const gasReadings = gasData.find((g) => g.param === gas)?.readings || [];
       const values = gasReadings.map((reading) => parseFloat(reading.value).toFixed(2)) || [];
@@ -76,7 +99,6 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       };
     });
 
-    // ✅ Reference Lines สำหรับค่ามาตรฐานปลอดภัย
     const referenceLines = Object.entries(SAFE_LIMITS)
       .filter(([gas]) => gasNames.includes(gas))
       .map(([gas, limit]) => ({
@@ -87,7 +109,6 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
         label: { show: true, position: "right", formatter: `${gas.toUpperCase()} ⚠️` },
       }));
 
-    // ✅ ตั้งค่า ECharts
     const option = {
       title: {
         text: `ค่าก๊าซ (PPM) - Sensor: ${selectedSensor}`,
@@ -132,14 +153,32 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
     };
   }, [gasData, selectedSensor]);
 
+  // ✅ แปลงเวลา
+  const formatShortDate = (timestamp) => {
+    if (!timestamp) return "ไม่มีข้อมูล";
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = (date.getFullYear() + 543).toString().slice(-2);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg p-4">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
         ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
       </h2>
+
+      {/* ✅ แสดงเวลาอัปเดตล่าสุด */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
+        อัปเดตล่าสุด : {formatShortDate(fakeClock)}
+      </p>
+
       <div ref={chartRef} className="w-full h-[500px]" />
 
-      {/* ✅ คำแนะนำด้านล่างกราฟ */}
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
         ⚠️ <strong>คำแนะนำ:</strong> ค่าก๊าซที่สูงกว่ามาตรฐานอาจส่งผลกระทบต่อสุขภาพ
         <br />

@@ -134,68 +134,158 @@
 //     }
 //   },
 // }));
-"use client";
-import { create } from "zustand";
-import axios from "axios";
-import ipconfig from "@/app/ipconfig";
+// "use client";
+// import { create } from "zustand";
+// import axios from "axios";
+// import ipconfig from "@/app/ipconfig";
 
-// ✅ ใช้ Template Literal แทน
-const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+// // ✅ ใช้ Template Literal แทน
+// const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+
+// export const useSensorStore = create((set) => ({
+//   sensorData: {},
+//   loading: false,
+//   error: null,
+
+//   fetchSensorData: async (userId, companyId, accessToken) => {
+//     try {
+//       set({ loading: true, error: null });
+
+//       const response = await axios.post(
+//         API_URL,
+//         { user_id: userId, company_id: companyId },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${accessToken}`,
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
+
+//       const sensorMappings = response.data?.sensor_mappings ?? [];
+
+//       const processedData = {};
+//       sensorMappings.forEach((sensor) => {
+//         const { sensor_id, environmental_params = {}, gas_parameters = {} } = sensor;
+
+//         processedData[sensor_id] = {
+//           environmental: Object.entries(environmental_params).map(([param, data]) => ({
+//             param,
+//             id_param: data?.id_param || "unknown",
+//             readings: data?.data?.map((d) => ({
+//               id_data: d?.id_data || "unknown",
+//               timestamp: d?.timestamp || "N/A",
+//               unit: d?.unit || "-",
+//               value: d?.value ?? 0,
+//             })) ?? [],
+//           })),
+//           gas: Object.entries(gas_parameters).map(([param, data]) => ({
+//             param,
+//             id_param: data?.id_param || "unknown",
+//             readings: data?.data?.map((d) => ({
+//               id_data: d?.id_data || "unknown",
+//               timestamp: d?.timestamp || "N/A",
+//               unit: d?.unit || "-",
+//               value: d?.value ?? 0,
+//             })) ?? [],
+//           })),
+//         };
+//       });
+
+//       set({ sensorData: processedData, loading: false });
+//     } catch (error) {
+//       console.error("❌ Error fetching sensor data:", error.message);
+//       set({ error: error.message, loading: false });
+//     }
+//   },
+// }));
+
+import { create } from "zustand";
+import ipconfig from "@/app/ipconfig";
 
 export const useSensorStore = create((set) => ({
   sensorData: {},
   loading: false,
   error: null,
+  ws: null,
 
-  fetchSensorData: async (userId, companyId, accessToken) => {
-    try {
-      set({ loading: true, error: null });
+  connectWebSocket: (userId, companyId, accessToken) => {
+    const { ws: existingWs } = useSensorStore.getState();
 
-      const response = await axios.post(
-        API_URL,
-        { user_id: userId, company_id: companyId },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    if (existingWs) {
+      console.log("⚠️ Closing existing WebSocket before reconnecting...");
+      existingWs.close();
+    }
 
-      const sensorMappings = response.data?.sensor_mappings ?? [];
+    const wsUrl = `ws://${ipconfig.API_SENSOR}/wss/get-sensor-data-mapping?token=${accessToken}&user_id=${userId}&company_id=${companyId}`;
+    console.log("🌐 Connecting WebSocket to:", wsUrl);
 
-      const processedData = {};
-      sensorMappings.forEach((sensor) => {
-        const { sensor_id, environmental_params = {}, gas_parameters = {} } = sensor;
+    const ws = new WebSocket(wsUrl);
+    set({ loading: true });
 
-        processedData[sensor_id] = {
-          environmental: Object.entries(environmental_params).map(([param, data]) => ({
-            param,
-            id_param: data?.id_param || "unknown",
-            readings: data?.data?.map((d) => ({
-              id_data: d?.id_data || "unknown",
-              timestamp: d?.timestamp || "N/A",
-              unit: d?.unit || "-",
-              value: d?.value ?? 0,
-            })) ?? [],
-          })),
-          gas: Object.entries(gas_parameters).map(([param, data]) => ({
-            param,
-            id_param: data?.id_param || "unknown",
-            readings: data?.data?.map((d) => ({
-              id_data: d?.id_data || "unknown",
-              timestamp: d?.timestamp || "N/A",
-              unit: d?.unit || "-",
-              value: d?.value ?? 0,
-            })) ?? [],
-          })),
-        };
-      });
+    ws.onopen = () => {
+      console.log("✅ WebSocket Connected");
+    };
 
-      set({ sensorData: processedData, loading: false });
-    } catch (error) {
-      console.error("❌ Error fetching sensor data:", error.message);
-      set({ error: error.message, loading: false });
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const processedData = {};
+
+        data.sensor_mappings?.forEach((sensor) => {
+          const { sensor_id, environmental_params = {}, gas_parameters = {} } = sensor;
+
+          processedData[sensor_id] = {
+            environmental: Object.entries(environmental_params).map(([param, d]) => ({
+              param,
+              id_param: d?.id_param || "unknown",
+              readings: d?.data?.map((reading) => ({
+                id_data: reading?.id_data || "unknown",
+                timestamp: reading?.timestamp || "N/A",
+                unit: reading?.unit || "-",
+                value: reading?.value ?? 0,
+              })) ?? [],
+            })),
+            gas: Object.entries(gas_parameters).map(([param, d]) => ({
+              param,
+              id_param: d?.id_param || "unknown",
+              readings: d?.data?.map((reading) => ({
+                id_data: reading?.id_data || "unknown",
+                timestamp: reading?.timestamp || "N/A",
+                unit: reading?.unit || "-",
+                value: reading?.value ?? 0,
+              })) ?? [],
+            })),
+          };
+        });
+
+        set({ sensorData: processedData, loading: false });
+      } catch (error) {
+        console.error("❌ Error parsing WebSocket message:", error.message);
+        set({ error: "Invalid data format", loading: false });
+      }
+    };
+
+    // ws.onerror = (error) => {
+    //   console.error("❌ WebSocket Error:", error);
+    //   set({ error: "WebSocket error", loading: false });
+    // };
+
+    ws.onclose = (event) => {
+      console.warn("❌ WebSocket Closed");
+      console.log("📴 Close Event:", event);
+    };
+
+    set({ ws });
+  },
+
+  disconnectWebSocket: () => {
+    const { ws } = useSensorStore.getState();
+    if (ws) {
+      console.log("🔌 Disconnecting WebSocket...");
+      ws.close();
+      set({ ws: null });
     }
   },
 }));
+

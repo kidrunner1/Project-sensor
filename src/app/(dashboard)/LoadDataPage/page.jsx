@@ -1,35 +1,67 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
 
 export default function Dashboard() {
-  const { sensorData, fetchSensorData, loading, error } = useSensorStore();
-  const [accessToken, setAccessToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [companyId, setCompanyId] = useState(null);
+  const {
+    sensorData,
+    loading,
+    error,
+    connectWebSocket,
+    disconnectWebSocket,
+  } = useSensorStore();
+
   const [selectedSensor, setSelectedSensor] = useState("");
   const [isLoadingSensor, setIsLoadingSensor] = useState(false);
   const [currentTimestamp, setCurrentTimestamp] = useState(new Date().toISOString());
+  const baseTimestampRef = useRef(null);
+  const startClientTimeRef = useRef(null);
+  const [fakeClock, setFakeClock] = useState(new Date());
 
   useEffect(() => {
-    const updateAuthData = () => {
-      const newAccessToken = sessionStorage.getItem("access_token");
-      const newUserId = sessionStorage.getItem("user_id");
-      const newCompanyId = sessionStorage.getItem("company_id");
-
-      if (newAccessToken !== accessToken || newUserId !== userId || newCompanyId !== companyId) {
-        setAccessToken(newAccessToken);
-        setUserId(newUserId);
-        setCompanyId(newCompanyId);
-
-        if (newUserId && newCompanyId && newAccessToken) {
-          fetchSensorData(newUserId, newCompanyId, newAccessToken);
-        }
+    const interval = setInterval(() => {
+      if (baseTimestampRef.current && startClientTimeRef.current) {
+        const diff = Date.now() - startClientTimeRef.current.getTime();
+        setFakeClock(new Date(baseTimestampRef.current.getTime() + diff));
       }
-    };
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-    updateAuthData();
-  }, [accessToken, userId, companyId, fetchSensorData]);
+  useEffect(() => {
+    if (!selectedSensor || !sensorData[selectedSensor]) return;
+
+    const readings = sensorData[selectedSensor]?.environmental || [];
+    const latest = readings.flatMap((r) => r.readings || []).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const lastReading = latest[0];
+
+    if (lastReading?.timestamp) {
+      const newTimestamp = new Date(lastReading.timestamp);
+      if (
+        !baseTimestampRef.current ||
+        baseTimestampRef.current.getTime() !== newTimestamp.getTime()
+      ) {
+        baseTimestampRef.current = newTimestamp;
+        startClientTimeRef.current = new Date();
+      }
+    }
+  }, [selectedSensor, sensorData]);
+
+  useEffect(() => {
+    const newAccessToken = sessionStorage.getItem("access_token");
+    const newUserId = sessionStorage.getItem("user_id");
+    const newCompanyId = sessionStorage.getItem("company_id");
+
+    if (newAccessToken && newUserId && newCompanyId) {
+      // ✅ ใช้ Store function แทนการสร้าง WebSocket ใหม่
+      connectWebSocket(newUserId, newCompanyId, newAccessToken);
+    }
+
+    return () => {
+      // ✅ Cleanup → Disconnect WebSocket
+      disconnectWebSocket();
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -44,7 +76,7 @@ export default function Dashboard() {
     setTimeout(() => {
       setSelectedSensor(newSensor);
       setIsLoadingSensor(false);
-    }, 2000);
+    }, 500);
   };
 
   const formatTimestamp = (timestamp) => {
@@ -113,11 +145,11 @@ export default function Dashboard() {
                   .map((param) => {
                     const validReadings = param.readings
                       .filter((reading) => reading.value !== null && reading.timestamp)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // เรียงจากล่าสุด
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                    if (validReadings.length === 0) return null; // ข้ามถ้าไม่มี value
+                    if (validReadings.length === 0) return null;
 
-                    const lastReading = validReadings[0]; // ข้อมูลล่าสุด
+                    const lastReading = validReadings[0];
 
                     return (
                       <tr key={`env-${param.id_param}`} className="text-center">
@@ -126,13 +158,11 @@ export default function Dashboard() {
                         <td className="border p-2">{param.param}</td>
                         <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
                         <td className="border p-2">{lastReading.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                        <td className="border p-2">{formatTimestamp(fakeClock)}</td>
                       </tr>
                     );
                   })}
               </tbody>
-
-
             </table>
 
             {/* ✅ Gas Parameters */}
@@ -153,7 +183,7 @@ export default function Dashboard() {
                   .map((param) => {
                     const validReadings = param.readings
                       .filter((reading) => reading.value !== null && reading.timestamp)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // ล่าสุดก่อน
+                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
                     if (validReadings.length === 0) return null;
 
@@ -166,7 +196,7 @@ export default function Dashboard() {
                         <td className="border p-2">{param.param}</td>
                         <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
                         <td className="border p-2">{lastReading.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(lastReading.timestamp)}</td>
+                        <td className="border p-2">{formatTimestamp(fakeClock)}</td>
                       </tr>
                     );
                   })}
