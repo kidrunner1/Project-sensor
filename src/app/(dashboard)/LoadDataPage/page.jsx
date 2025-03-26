@@ -93,18 +93,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-5">
+    <div className="p-5 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-500">
       <h1 className="text-3xl font-bold">SENSOR REPORT</h1>
 
       {loading && <p>🔄 กำลังโหลดข้อมูล Sensor...</p>}
       {error && <p className="text-red-500">❌ {error}</p>}
 
       <div className="mt-4">
-        <label className="text-gray-700 font-semibold">เลือก Sensor:</label>
+        <label className="text-gray-700 dark:text-gray-300 font-semibold">เลือก Sensor:</label>
         <select
           value={selectedSensor}
           onChange={handleSensorChange}
-          className="block w-full mt-2 p-2 border rounded-md"
+          className="block w-full mt-2 p-2 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           disabled={isLoadingSensor}
         >
           <option value="">🔽 กรุณาเลือก Sensor</option>
@@ -124,14 +124,16 @@ export default function Dashboard() {
       ) : (
         selectedSensor &&
         sensorData[selectedSensor] && (
-          <div className="mt-6 p-4 bg-white rounded-lg shadow-md">
+          <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-500">
             <h2 className="text-lg font-bold">ข้อมูล Sensor: {selectedSensor}</h2>
 
-            {/* ✅ Environmental Parameters */}
-            <h3 className="mt-3 text-md font-semibold text-gray-700">Environmental Parameters</h3>
-            <table className="w-full mt-2 border-collapse border border-gray-300">
+            {/* Environmental Parameters */}
+            <h3 className="mt-3 text-md font-semibold text-gray-700 dark:text-gray-200">
+              Environmental Parameters
+            </h3>
+            <table className="w-full mt-2 border-collapse border border-gray-300 dark:border-gray-600 text-sm">
               <thead>
-                <tr className="bg-gray-200">
+                <tr className="bg-gray-200 dark:bg-gray-700">
                   <th className="border p-2">ID Data</th>
                   <th className="border p-2">Type</th>
                   <th className="border p-2">Name</th>
@@ -141,35 +143,35 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {sensorData[selectedSensor].environmental
-                  .map((param) => {
-                    const validReadings = param.readings
-                      .filter((reading) => reading.value !== null && reading.timestamp)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                {sensorData[selectedSensor].environmental.map((param) => {
+                  const validReadings = param.readings
+                    .filter((reading) => reading.value !== null && reading.timestamp)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                    if (validReadings.length === 0) return null;
+                  if (validReadings.length === 0) return null;
+                  const lastReading = validReadings[0];
 
-                    const lastReading = validReadings[0];
-
-                    return (
-                      <tr key={`env-${param.id_param}`} className="text-center">
-                        <td className="border p-2">{param.id_param}</td>
-                        <td className="border p-2">Environmental</td>
-                        <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
-                        <td className="border p-2">{lastReading.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(fakeClock)}</td>
-                      </tr>
-                    );
-                  })}
+                  return (
+                    <tr key={`env-${param.id_param}`} className="text-center">
+                      <td className="border p-2">{param.id_param}</td>
+                      <td className="border p-2">Environmental</td>
+                      <td className="border p-2">{param.param}</td>
+                      <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
+                      <td className="border p-2">{lastReading.unit || ""}</td>
+                      <td className="border p-2">{formatTimestamp(fakeClock)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 
-            {/* ✅ Gas Parameters */}
-            <h3 className="mt-3 text-md font-semibold text-gray-700">Gas Parameters</h3>
-            <table className="w-full mt-2 border-collapse border border-gray-300">
+            {/* Gas Parameters */}
+            <h3 className="mt-3 text-md font-semibold text-gray-700 dark:text-gray-200">
+              Gas Parameters
+            </h3>
+            <table className="w-full mt-2 border-collapse border border-gray-300 dark:border-gray-600 text-sm">
               <thead>
-                <tr className="bg-gray-200">
+                <tr className="bg-gray-200 dark:bg-gray-700">
                   <th className="border p-2">ID Data</th>
                   <th className="border p-2">Type</th>
                   <th className="border p-2">Name</th>
@@ -179,32 +181,31 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {sensorData[selectedSensor].gas
-                  .map((param) => {
-                    const validReadings = param.readings
-                      .filter((reading) => reading.value !== null && reading.timestamp)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                {sensorData[selectedSensor].gas.map((param) => {
+                  const validReadings = param.readings
+                    .filter((reading) => reading.value !== null && reading.timestamp)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                    if (validReadings.length === 0) return null;
+                  if (validReadings.length === 0) return null;
+                  const lastReading = validReadings[0];
 
-                    const lastReading = validReadings[0];
-
-                    return (
-                      <tr key={`gas-${param.id_param}`} className="text-center">
-                        <td className="border p-2">{param.id_param}</td>
-                        <td className="border p-2">Gas</td>
-                        <td className="border p-2">{param.param}</td>
-                        <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
-                        <td className="border p-2">{lastReading.unit || ""}</td>
-                        <td className="border p-2">{formatTimestamp(fakeClock)}</td>
-                      </tr>
-                    );
-                  })}
+                  return (
+                    <tr key={`gas-${param.id_param}`} className="text-center">
+                      <td className="border p-2">{param.id_param}</td>
+                      <td className="border p-2">Gas</td>
+                      <td className="border p-2">{param.param}</td>
+                      <td className="border p-2">{parseFloat(lastReading.value).toFixed(2)}</td>
+                      <td className="border p-2">{lastReading.unit || ""}</td>
+                      <td className="border p-2">{formatTimestamp(fakeClock)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )
       )}
     </div>
+
   );
 }

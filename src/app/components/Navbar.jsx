@@ -147,6 +147,20 @@ const Navbar = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isNotificationOpen, setNotificationOpen] = useState(false); // ✅ State สำหรับแจ้งเตือน
   const router = useRouter();
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+    document.documentElement.classList.toggle("dark", savedTheme === "dark");
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
 
   useEffect(() => {
     if (!user) {
@@ -234,9 +248,8 @@ const Navbar = () => {
                     notifications.map((notification) => (
                       <li
                         key={notification.id}
-                        className={`px-5 py-3 text-sm cursor-pointer hover:bg-gray-200 transition duration-200 ${
-                          notification.read ? "text-gray-600" : "text-black font-bold"
-                        }`}
+                        className={`px-5 py-3 text-sm cursor-pointer hover:bg-gray-200 transition duration-200 ${notification.read ? "text-gray-600" : "text-black font-bold"
+                          }`}
                         onClick={() => markAsRead(notification.id)}
                       >
                         {notification.message}
@@ -271,6 +284,21 @@ const Navbar = () => {
                   <p className="text-xs text-gray-600">{user?.email}</p>
                 </div>
                 <ul className="py-2">
+                  <li className="flex items-center justify-between px-5 py-2">
+                    <span className="text-sm text-gray-700 dark:text-gray-700">
+                      โหมดกลางคืน
+                    </span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={theme === "dark"}
+                        onChange={toggleTheme}
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:bg-blue-600 transition-all duration-300" />
+                      <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-full" />
+                    </label>
+                  </li>
                   <li>
                     <button
                       onClick={handleLogout}

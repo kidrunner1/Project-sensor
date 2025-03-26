@@ -9,13 +9,11 @@ const SAFE_LIMITS = {
   no2: 0.1,
 };
 
-const getRandomColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+const FIXED_GAS_COLORS = {
+  h2h3: "#FF6B6B",  // สีแดงอ่อน
+  o3: "#4BC0C0",    // ฟ้า
+  co: "#F9A825",    // เหลืองเข้ม
+  no2: "#9575CD",   // ม่วง
 };
 
 const LineChartGas = ({ gasData, selectedSensor }) => {
@@ -26,7 +24,38 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
   const baseTimestampRef = useRef(null);
   const startClientTimeRef = useRef(null);
 
-  // ✅ ให้เวลาขยับทุก 1 วินาที
+  const [isDarkTheme, setIsDarkTheme] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = (date.getFullYear() + 543).toString().slice(-2); // เอา 2 หลักท้าย
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  // ✅ ตรวจจับธีมเมื่อมีการเปลี่ยน dark/light
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkTheme(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // ✅ เวลาปลอมให้เดินทุกวินาที
   useEffect(() => {
     const interval = setInterval(() => {
       if (baseTimestampRef.current && startClientTimeRef.current) {
@@ -41,24 +70,18 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
     if (!chartRef.current || gasData.length === 0) return;
 
     if (!myChart.current) {
-      myChart.current = echarts.init(chartRef.current);
+      myChart.current = echarts.init(chartRef.current, isDarkTheme ? "dark" : null);
     }
 
     const gasNames = [...new Set(gasData.map((gas) => gas.param))];
-    const colors = gasNames.reduce((acc, gas) => ({ ...acc, [gas]: getRandomColor() }), {});
+    const colors = gasNames.reduce((acc, gas) => {
+      const gasKey = gas.toLowerCase();
+      return { ...acc, [gas]: FIXED_GAS_COLORS[gasKey] || "#999999" };
+    }, {});
 
-    const timestamps = gasData[0]?.readings?.map((reading) =>
-      new Date(reading.timestamp).toLocaleString("th-TH", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    ) || [];
+    const timestamps = gasData[0]?.readings?.map((reading) => reading.timestamp) || [];
 
-    // ✅ ตั้งเวลาฐานเมื่อมีข้อมูลใหม่จริง
+    // ✅ อัปเดต baseTimestamp ถ้ามีข้อมูลใหม่
     const latestReading = gasData[0]?.readings?.[gasData[0].readings.length - 1];
     if (latestReading?.timestamp) {
       const newTimestamp = new Date(latestReading.timestamp);
@@ -119,7 +142,7 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
         trigger: "axis",
         axisPointer: { type: "cross" },
         formatter: (params) => {
-          let tooltipText = `<strong>${params[0].axisValue}</strong><br/>`;
+          let tooltipText = `<strong>ค่าก๊าซ (ล่าสุด)</strong><br/>`;
           params.forEach((item) => {
             tooltipText += `${item.marker} ${item.seriesName}: <strong>${item.value}</strong> ppm<br/>`;
           });
@@ -134,26 +157,34 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       grid: { left: "10%", right: "10%", bottom: "20%", containLabel: true },
       xAxis: {
         type: "category",
-        data: timestamps,
-        axisLabel: { rotate: -30 },
+        data: timestamps.map((ts) => formatTimestamp(ts)),
+        axisLabel: {
+          rotate: -20,
+          fontSize: 10,
+          color: isDarkTheme ? "#ccc" : "#333",
+          show: false, // รองรับ Dark mode
+        },
       },
       yAxis: {
         type: "value",
         name: "ppm",
-        axisLabel: { formatter: (value) => parseFloat(value).toFixed(2) },
+        axisLabel: {
+          formatter: (value) => parseFloat(value).toFixed(2),
+        },
       },
       series: [...seriesData, ...referenceLines],
     };
 
     myChart.current.setOption(option);
+    myChart.current.resize();
+
     window.addEventListener("resize", () => myChart.current.resize());
 
     return () => {
       window.removeEventListener("resize", () => myChart.current.resize());
     };
-  }, [gasData, selectedSensor]);
+  }, [gasData, selectedSensor, isDarkTheme]);
 
-  // ✅ แปลงเวลา
   const formatShortDate = (timestamp) => {
     if (!timestamp) return "ไม่มีข้อมูล";
     const date = new Date(timestamp);
@@ -167,25 +198,27 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-4">
+    <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
         ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
       </h2>
 
-      {/* ✅ แสดงเวลาอัปเดตล่าสุด */}
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
         อัปเดตล่าสุด : {formatShortDate(fakeClock)}
       </p>
 
       <div ref={chartRef} className="w-full h-[500px]" />
-
+        
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-        ⚠️ <strong>คำแนะนำ:</strong> ค่าก๊าซที่สูงกว่ามาตรฐานอาจส่งผลกระทบต่อสุขภาพ
+        ✅ <strong>คำแนะนำ:</strong> คลิกชื่อก๊าซที่ด้านล่างกราฟ เพื่อเปิด/ปิดการแสดงผลของแต่ละตัว
         <br />
-        🟢 ปลอดภัย: อยู่ในช่วงปกติ  
-        🔵 เฝ้าระวัง: อาจมีผลกระทบในระยะยาว  
-        🔴 อันตราย: ควรหลีกเลี่ยงพื้นที่และใช้หน้ากากป้องกัน  
+        ⚠️ ค่าก๊าซที่สูงกว่ามาตรฐานอาจส่งผลกระทบต่อสุขภาพ
+        <br />
+        🟢 ปลอดภัย: อยู่ในช่วงปกติ
+        🔵 เฝ้าระวัง: อาจมีผลกระทบในระยะยาว
+        🔴 อันตราย: ควรหลีกเลี่ยงพื้นที่และใช้หน้ากากป้องกัน
       </p>
+
     </div>
   );
 };

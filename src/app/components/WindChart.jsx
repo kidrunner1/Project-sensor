@@ -14,11 +14,29 @@ const WindChart = ({ sensorData, selectedSensor }) => {
 
   const unit = "m/s"; // หรือเปลี่ยนเป็น "km/h"
 
+  // ✅ ตรวจสอบธีมแบบ dynamic
+  const [isDarkTheme, setIsDarkTheme] = useState(
+    () => document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkTheme(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!chartRef.current || !sensorData || !selectedSensor) return;
 
     if (!myChart.current) {
-      myChart.current = echarts.init(chartRef.current, null, { responsive: true });
+      myChart.current = echarts.init(chartRef.current, isDarkTheme ? "dark" : null);
     }
 
     const windSpeedParam = sensorData?.[selectedSensor]?.environmental?.find((param) =>
@@ -37,7 +55,6 @@ const WindChart = ({ sensorData, selectedSensor }) => {
       windSpeedValue = (windSpeedValue * 3.6).toFixed(2);
     }
 
-    // ✅ ตั้งเวลาพื้นฐาน (baseTimestamp) และเวลาเริ่มฝั่ง client (startClientTime)
     if (lastReading?.timestamp) {
       const newTimestamp = new Date(lastReading.timestamp);
       if (
@@ -51,15 +68,12 @@ const WindChart = ({ sensorData, selectedSensor }) => {
 
     setWindSpeed(windSpeedValue);
 
-    const gaugeColor =
-      windSpeedValue < 3 ? "#67e0e3" : windSpeedValue < 7 ? "#37a2da" : "#fd666d";
-
     const option = {
       series: [
         {
           type: "gauge",
           radius: "110%",
-          center: ['50%', '55%'],
+          center: ["50%", "55%"],
           startAngle: 225,
           endAngle: -45,
           pointer: {
@@ -83,7 +97,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
           },
           splitLine: {
             length: 10,
-            lineStyle: { color: '#999' }
+            lineStyle: { color: "#999" },
           },
           axisTick: {
             length: 4,
@@ -91,7 +105,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
           detail: {
             valueAnimation: true,
             formatter: `{value} ${unit}`,
-            color: "#333",
+            color: isDarkTheme ? "#fff" : "#333",
             fontSize: 14,
           },
           animationDuration: 800,
@@ -110,9 +124,8 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     return () => {
       window.removeEventListener("resize", () => myChart.current.resize());
     };
-  }, [sensorData, selectedSensor]);
+  }, [sensorData, selectedSensor, isDarkTheme]);
 
-  // ✅ ให้ fakeClock เดินทุกวินาที
   useEffect(() => {
     const interval = setInterval(() => {
       if (baseTimestampRef.current && startClientTimeRef.current) {
@@ -123,7 +136,6 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ ฟังก์ชันแปลง timestamp
   const formatShortDate = (timestamp) => {
     if (!timestamp) return "ไม่มีข้อมูล";
     const date = new Date(timestamp);
@@ -137,8 +149,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 h-[350px] flex flex-col justify-between shadow-md">
-      {/* ✅ Title Section */}
+    <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
       <div className="flex flex-col items-start">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">ความเร็วลม ({unit})</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {selectedSensor}</p>
@@ -147,12 +158,10 @@ const WindChart = ({ sensorData, selectedSensor }) => {
         </p>
       </div>
 
-      {/* ✅ Chart */}
       <div className="grid place-items-center w-full overflow-visible pt-2">
         <div ref={chartRef} className="w-[250px] h-[220px]" />
       </div>
 
-      {/* ✅ Description */}
       <div className="text-center text-xs text-gray-600 dark:text-gray-300 mt-1">
         <p>⚠️ ความเร็วลมที่สูงอาจมีผลต่อโครงสร้าง</p>
       </div>

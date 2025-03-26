@@ -93,6 +93,7 @@ const TempChart = ({ sensorData }) => {
       type: "category",
       data: temperatureData.readings.map((reading) => formatTimestamp(reading.timestamp)),
       axisLabel: { rotate: -20 },
+      show: false, // ❌ ซ่อน label แกน X
     },
     yAxis: {
       type: "value",
@@ -144,6 +145,9 @@ const TempChart = ({ sensorData }) => {
 
       {/* ✅ แสดงกราฟ */}
       <ReactECharts option={option} style={{ height: "400px", width: "100%" }} />
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+        ⚠️ หากอุณหภูมิสูงหรือต่ำเกินไป อาจเป็นสัญญาณของความผิดปกติในระบบหรือสภาพแวดล้อม
+      </p>
     </div>
   );
 };

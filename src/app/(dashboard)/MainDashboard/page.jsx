@@ -7,7 +7,6 @@ import { FiRefreshCcw } from "react-icons/fi";
 import Swal from "sweetalert2";
 import Select from "react-select";
 
-// Lazy Load Components
 const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
@@ -29,7 +28,6 @@ const HomePageTest = () => {
 
   useEffect(() => {
     setIsMounted(true);
-
     const userId = sessionStorage.getItem("user_id");
     const companyId = sessionStorage.getItem("company_id");
     const accessToken = sessionStorage.getItem("access_token");
@@ -38,9 +36,7 @@ const HomePageTest = () => {
       connectWebSocket(userId, companyId, accessToken);
     }
 
-    return () => {
-      disconnectWebSocket();
-    };
+    return () => disconnectWebSocket();
   }, []);
 
   useEffect(() => {
@@ -65,20 +61,18 @@ const HomePageTest = () => {
     });
   };
 
-  if (!isMounted) {
-    return <FullPageSkeleton />;
-  }
+  if (!isMounted) return <FullPageSkeleton />;
 
   if (!isAuthenticated) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen dark:bg-gray-900 dark:text-white">
         🔄 กำลังโหลด...
       </div>
     );
   }
 
   return (
-    <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto">
+    <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto dark:bg-gray-900 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold">SENSOR DASHBOARD</h2>
@@ -92,6 +86,17 @@ const HomePageTest = () => {
             value={{ value: selectedSensor, label: selectedSensor }}
             onChange={(e) => setSelectedSensor(e.value)}
             className="w-48"
+            styles={{
+              control: (base) => ({
+                ...base,
+                backgroundColor: 'white',
+                color: 'black',
+              }),
+              menu: (base) => ({
+                ...base,
+                backgroundColor: '#f0f0f0',
+              }),
+            }}
           />
 
           <button
@@ -114,7 +119,8 @@ const HomePageTest = () => {
           )}
         </Suspense>
 
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex flex-col gap-4 h-full ">
+
           <Suspense fallback={<SkeletonChart />}>
             {loading || !selectedSensor ? (
               <SkeletonChart />
@@ -122,6 +128,7 @@ const HomePageTest = () => {
               <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
             )}
           </Suspense>
+
 
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex justify-center items-center h-[200px]">
             <p className="text-gray-700 dark:text-gray-300">เพิ่ม Component อื่น ๆ ตรงนี้</p>
@@ -143,11 +150,11 @@ const HomePageTest = () => {
               return validGasData.length > 0 ? (
                 <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
               ) : (
-                <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
+                <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
               );
             })()
           ) : (
-            <p className="text-center text-gray-500">❌ ไม่มีข้อมูลก๊าซ</p>
+            <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซ</p>
           )}
         </Suspense>
       </div>
