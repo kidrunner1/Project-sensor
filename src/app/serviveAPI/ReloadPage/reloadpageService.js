@@ -2,7 +2,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 import Swal from "sweetalert2";
 
-const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
+const REFRESH_API = `https://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
 
 export function reloadPage() {
 

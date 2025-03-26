@@ -1,7 +1,7 @@
 {
   "name": "@firebasegen/default-connector",
   "version": "1.0.0",
-  "author": "Firebase <firebase-support@google.com> (http://firebase.google.com/)",
+  "author": "Firebase <firebase-support@google.com> (https://firebase.google.com/)",
   "description": "Generated SDK For default",
   "license": "Apache-2.0",
   "engines": {

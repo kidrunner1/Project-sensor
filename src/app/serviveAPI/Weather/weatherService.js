@@ -1,4 +1,4 @@
-const BASE_URL = "http://api.weatherapi.com/v1/forecast.json";
+const BASE_URL = "https://api.weatherapi.com/v1/forecast.json";
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
 const MAX_RETRIES = 3; // 🔄 ลองใหม่สูงสุด 3 ครั้ง
@@ -88,12 +88,12 @@ const formatWeatherData = (data) => ({
     humidity: data?.current?.humidity || 0,
     wind: data?.current?.wind_kph || 0,
     condition: data?.current?.condition?.text || "Unknown",
-    icon: data?.current?.condition?.icon ? `http:${data.current.condition.icon}` : "",
+    icon: data?.current?.condition?.icon ? `https:${data.current.condition.icon}` : "",
   },
   forecast: (data?.forecast?.forecastday || []).map((day) => ({
     date: day.date || "N/A",
     dayName: new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }),
-    icon: day?.day?.condition?.icon ? `http:${day.day.condition.icon}` : "",
+    icon: day?.day?.condition?.icon ? `https:${day.day.condition.icon}` : "",
     tempMax: day?.day?.maxtemp_c || 0,
     tempMin: day?.day?.mintemp_c || 0,
     chanceOfRain: day?.day?.daily_chance_of_rain || 0,

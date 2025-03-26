@@ -84,8 +84,8 @@ export default function MapWithDraggableMarker() {
       <MapContainer center={center} zoom={13} scrollWheelZoom={true} className="h-full w-full">
         {/* ✅ Tile Layer (Google Maps หรือ OpenStreetMap) */}
         <TileLayer
-          attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {/* ✅ Marker แบบลากได้ */}

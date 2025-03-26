@@ -2,9 +2,9 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 
 // ✅ URL API
-const FORGET_PASSWORD_API = `http://${ipconfig.API_HOST}/api/auth/forget-password`;
-const VERIFY_OTP_API = `http://${ipconfig.API_HOST}/api/auth/verify-otp-forget-password`;
-const RESET_PASSWORD_API = `http://${ipconfig.API_HOST}/api/auth/reset-password-forget-password`;
+const FORGET_PASSWORD_API = `https://${ipconfig.API_HOST}/api/auth/forget-password`;
+const VERIFY_OTP_API = `https://${ipconfig.API_HOST}/api/auth/verify-otp-forget-password`;
+const RESET_PASSWORD_API = `https://${ipconfig.API_HOST}/api/auth/reset-password-forget-password`;
 
 /**
  * 🔹 1. ขอ OTP ไปยังอีเมล

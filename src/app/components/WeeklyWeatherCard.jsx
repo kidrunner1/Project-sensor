@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 
 // ✅ Mock Data: สร้างข้อมูลจำลองแทน API
 const mockWeeklyWeather = [
-  { dayName: "Sun", icon: "http://cdn.weatherapi.com/weather/64x64/day/113.png", tempMax: 34, tempMin: 25, chanceOfRain: 10 },
-  { dayName: "Mon", icon: "http://cdn.weatherapi.com/weather/64x64/day/116.png", tempMax: 32, tempMin: 24, chanceOfRain: 20 },
-  { dayName: "Tue", icon: "http://cdn.weatherapi.com/weather/64x64/day/308.png", tempMax: 30, tempMin: 23, chanceOfRain: 80 },
-  { dayName: "Wed", icon: "http://cdn.weatherapi.com/weather/64x64/day/296.png", tempMax: 29, tempMin: 22, chanceOfRain: 50 },
-  { dayName: "Thu", icon: "http://cdn.weatherapi.com/weather/64x64/day/119.png", tempMax: 31, tempMin: 23, chanceOfRain: 30 },
-  { dayName: "Fri", icon: "http://cdn.weatherapi.com/weather/64x64/night/113.png", tempMax: 28, tempMin: 21, chanceOfRain: 10 },
-  { dayName: "Sat", icon: "http://cdn.weatherapi.com/weather/64x64/day/176.png", tempMax: 27, tempMin: 20, chanceOfRain: 40 },
+  { dayName: "Sun", icon: "https://cdn.weatherapi.com/weather/64x64/day/113.png", tempMax: 34, tempMin: 25, chanceOfRain: 10 },
+  { dayName: "Mon", icon: "https://cdn.weatherapi.com/weather/64x64/day/116.png", tempMax: 32, tempMin: 24, chanceOfRain: 20 },
+  { dayName: "Tue", icon: "https://cdn.weatherapi.com/weather/64x64/day/308.png", tempMax: 30, tempMin: 23, chanceOfRain: 80 },
+  { dayName: "Wed", icon: "https://cdn.weatherapi.com/weather/64x64/day/296.png", tempMax: 29, tempMin: 22, chanceOfRain: 50 },
+  { dayName: "Thu", icon: "https://cdn.weatherapi.com/weather/64x64/day/119.png", tempMax: 31, tempMin: 23, chanceOfRain: 30 },
+  { dayName: "Fri", icon: "https://cdn.weatherapi.com/weather/64x64/night/113.png", tempMax: 28, tempMin: 21, chanceOfRain: 10 },
+  { dayName: "Sat", icon: "https://cdn.weatherapi.com/weather/64x64/day/176.png", tempMax: 27, tempMin: 20, chanceOfRain: 40 },
 ];
 
 export default function WeeklyWeatherCard() {
