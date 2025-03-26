@@ -378,7 +378,7 @@ export default function Login() {
                   value={num}
                   onChange={(e) => handleOtp(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(e, index)} // ✅ จัดการ Key Events
-                  className="w-12 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-12 text-gray-900 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               ))}
             </div>

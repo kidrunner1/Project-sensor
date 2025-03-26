@@ -120,28 +120,50 @@ export default function ForgetPasswordForm() {
                         <h2 className="text-lg font-bold text-gray-900 ">กรอกรหัส OTP</h2>
 
                         {/* ช่องกรอก OTP 6 หลัก */}
-                        <div className="flex justify-center gap-2 ">
+                        <div className="flex justify-center gap-2">
                             {otp.map((num, index) => (
                                 <input
                                     key={index}
+                                    id={`otp-${index}`}
                                     type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     maxLength={1}
                                     value={num}
                                     onChange={(e) => {
+                                        const val = e.target.value.replace(/[^0-9]/g, ""); // ✅ กรองเฉพาะตัวเลข
+                                        if (!val) return;
+
                                         const newOtp = [...otp];
-                                        newOtp[index] = e.target.value;
+                                        newOtp[index] = val;
                                         setOtp(newOtp);
-                                        // ✅ เลื่อนโฟกัสไปช่องถัดไปอัตโนมัติ
-                                        if (e.target.value && index < 5) {
+
+                                        // ✅ ไปช่องถัดไปอัตโนมัติ
+                                        if (index < 5) {
                                             document.getElementById(`otp-${index + 1}`)?.focus();
                                         }
                                     }}
-                                    id={`otp-${index}`}
-                                    className="w-12 h-12 border border-gray-300 rounded-lg text-center text-lg font-bold
-                                               focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-300"
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Backspace") {
+                                            if (otp[index]) {
+                                                const newOtp = [...otp];
+                                                newOtp[index] = "";
+                                                setOtp(newOtp);
+                                            } else if (index > 0) {
+                                                document.getElementById(`otp-${index - 1}`)?.focus();
+                                            }
+                                        } else if (e.key === "ArrowLeft" && index > 0) {
+                                            document.getElementById(`otp-${index - 1}`)?.focus();
+                                        } else if (e.key === "ArrowRight" && index < 5) {
+                                            document.getElementById(`otp-${index + 1}`)?.focus();
+                                        }
+                                    }}
+                                    className="w-12 text-gray-900 h-12 border border-gray-300 rounded-lg text-center text-lg font-bold
+                 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-300"
                                 />
                             ))}
                         </div>
+
                         {/* ปุ่มยืนยัน OTP */}
                         <button
                             onClick={handleVerifyOtp}

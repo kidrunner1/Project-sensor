@@ -56,10 +56,10 @@ const LoginSecurity = () => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6">เปลี่ยนรหัสผ่าน</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">เปลี่ยนรหัสผ่าน</h1>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium">รหัสผ่านปัจจุบัน</label>
+          <label className="block text-sm font-medium text-gray-900 dark:text-white">รหัสผ่านปัจจุบัน</label>
           <div className="relative mt-2">
             <input
               type={showCurrentPassword ? "text" : "password"}
@@ -77,7 +77,7 @@ const LoginSecurity = () => {
             </button>
           </div>
 
-          <label className="block text-sm font-medium mt-4">รหัสผ่านใหม่</label>
+          <label className="block text-sm font-medium mt-4 text-gray-900 dark:text-white">รหัสผ่านใหม่</label>
           <div className="relative mt-2">
             <input
               type={showNewPassword ? "text" : "password"}
@@ -95,7 +95,7 @@ const LoginSecurity = () => {
             </button>
           </div>
 
-          <label className="block text-sm font-medium mt-4">ยืนยันรหัสผ่านใหม่</label>
+          <label className="block text-sm font-medium mt-4 text-gray-900 dark:text-white">ยืนยันรหัสผ่านใหม่</label>
           <div className="relative mt-2">
             <input
               type={showConfirmPassword ? "text" : "password"}

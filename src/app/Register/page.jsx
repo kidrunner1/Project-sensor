@@ -259,7 +259,7 @@ const Register = () => {
                 ยินดีต้อนรับ
               </h2>
               <p className="text-sm md:text-base text-white max-w-xs leading-relaxed">
-                เข้าร่วมกับเราวันนี้เพื่อใช้งานระบบ <span className="font-semibold">DOGNOSE</span>
+                เข้าร่วมกับเราวันนี้เพื่อใช้งานระบบ <span className="font-semibold">DOGNOSE </span>
                 เทคโนโลยีสุดล้ำที่ช่วยตรวจจับ <span className="font-semibold">กลิ่นสารเคมี</span>
                 และ <span className="font-semibold">สิ่งแวดล้อมที่เป็นอันตราย</span> รอบตัวคุณ
                 เพื่อความปลอดภัยที่ดียิ่งขึ้น

@@ -213,7 +213,7 @@ export default function PersonalProfile() {
                   value={formData.name}
                   onChange={handleInputChange}
                   readOnly={!isEditing.name}
-                  className={`w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 dark:text-white ${isEditing.name ? "" : "bg-gray-200 cursor-not-allowed"}`}
+                  className={`w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 text-gray-900 dark:text-white ${isEditing.name ? "" : "bg-gray-200 cursor-not-allowed"}`}
                 />
               </div>
               <FiEdit2 className="text-gray-500 cursor-pointer ml-3" onClick={() => setIsEditing({ ...isEditing, name: true })} />
@@ -222,14 +222,14 @@ export default function PersonalProfile() {
             {/* เบอร์โทรศัพท์ */}
             <div className="border p-4 rounded-lg bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
               <div className="w-full">
-                <label className="text-sm text-gray-500 dark:text-gray-400">เบอร์โทรศัพท์</label>
+                <label className="text-sm text-gray-900 dark:text-gray-400">เบอร์โทรศัพท์</label>
                 <input
                   type="text"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
                   readOnly={!isEditing.phone}
-                  className={`w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 dark:text-white ${isEditing.phone ? "" : "bg-gray-200 cursor-not-allowed"}`}
+                  className={`w-full mt-1 p-2 border rounded-lg dark:bg-gray-800 text-gray-900 dark:text-white ${isEditing.phone ? "" : "bg-gray-200 cursor-not-allowed"}`}
                 />
               </div>
               <FiEdit2 className="text-gray-500 cursor-pointer ml-3" onClick={() => setIsEditing({ ...isEditing, phone: true })} />

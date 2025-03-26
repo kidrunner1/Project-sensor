@@ -140,6 +140,7 @@ import { useNotificationStore } from "@/app/serviveAPI/Notifications/ServiceNoti
 import Swal from "sweetalert2";
 import Image from "next/image";
 import { FiCalendar, FiBell, FiChevronDown } from "react-icons/fi";
+import { Typewriter } from 'react-simple-typewriter';
 
 const Navbar = () => {
   const { user, fetchUserData, clearUser } = useUserStore(); // ✅ ใช้ Zustand Store ของ User
@@ -148,6 +149,7 @@ const Navbar = () => {
   const [isNotificationOpen, setNotificationOpen] = useState(false); // ✅ State สำหรับแจ้งเตือน
   const router = useRouter();
   const [theme, setTheme] = useState("light");
+  const [infinity] = useState(Infinity);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -188,23 +190,48 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
+      const response = await logoutUser(); // ✅ Swal ถูกแสดงใน service แล้ว
+      clearUser();
+      sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("user_id");
+  
+      if (response?.redirect_to) {
+        router.push(response.redirect_to); // ✅ ใช้ redirect_to ที่ถูกต้อง
+      } else {
+        console.warn("⚠️ ไม่พบ redirect URL");
+      }
+  
+    } catch (error) {
+      console.error("❌ Logout Error:", error);
+      // ❌ ไม่ต้อง Swal ที่นี่ ถ้าแสดงไปแล้วจาก service
+    }
+  };
+  
+
+  const handleLogout2 = async () => {
+    try {
       const response = await logoutUser();
       clearUser();
       sessionStorage.removeItem("access_token");
       sessionStorage.removeItem("user_id");
-
+  
       Swal.fire({
         title: "ออกจากระบบสำเร็จ!",
-        text: response.message,
+        text: response?.message || "คุณได้ออกจากระบบแล้ว",
         icon: "success",
         confirmButtonText: "ตกลง",
       }).then(() => {
-        router.push(response.redirectTo);
+        // ✅ ใช้ชื่อให้ตรงกับ response: redirect_to
+        if (response?.redirect_to?.startsWith("/")) {
+          router.push(response.redirect_to);
+        } else {
+          router.push("/"); // fallback
+        }
       });
     } catch (error) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถออกจากระบบได้",
+        text: error?.message || "ไม่สามารถออกจากระบบได้",
         icon: "error",
         confirmButtonText: "ตกลง",
       });
@@ -212,10 +239,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-100 px-6 py-4 flex justify-between items-center shadow-md">
+    <nav className="bg-white dark:bg-gray-800 px-6 py-4 flex justify-between items-center shadow-md">
       {/* Left: Welcome Message */}
-      <h1 className="text-xl font-semibold text-gray-800">
-        DOGNOSE ยินดีต้อนรับผู้ใช้งาน <span className="font-bold">{user?.name || "User"}!</span>
+      <h1 className="text-xl font-semibold text-gray-800 dark:text-white">
+        <Typewriter
+          words={[
+            `DOGNOSE ยินดีต้อนรับผู้ใช้งาน ${user?.name || "User"}!`,
+            'ตรวจสอบสถานะเซ็นเซอร์ของคุณได้ที่นี่',
+            'ระบบพร้อมให้บริการตลอด 24 ชั่วโมง'
+          ]}
+          loop={infinity}
+          cursor
+          cursorStyle="|"
+          typeSpeed={60}
+          deleteSpeed={30}
+          delaySpeed={2000}
+        />
       </h1>
 
       {/* Right: Icons & Profile */}
@@ -239,7 +278,7 @@ const Navbar = () => {
 
             {/* 🔽 Dropdown Notifications */}
             {isNotificationOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 dropdown-menu z-50 ">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 dropdown-menu z-50">
                 <div className="px-5 py-3 bg-gray-100 dark:bg-gray-700">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">การแจ้งเตือน</p>
                 </div>

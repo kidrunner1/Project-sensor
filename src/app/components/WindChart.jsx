@@ -158,7 +158,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
         </p>
       </div>
 
-      <div className="grid place-items-center w-full overflow-visible pt-2">
+      <div className="grid place-items-center w-full overflow-visible ">
         <div ref={chartRef} className="w-[250px] h-[220px]" />
       </div>
 
