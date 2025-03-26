@@ -2,18 +2,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 
-const SAFE_LIMITS = {
-  ch2o: 0.1,
-  o3: 0.05,
-  co: 9,
-  no2: 0.1,
-};
-
 const FIXED_GAS_COLORS = {
-  h2h3: "#FF6B6B",  // สีแดงอ่อน
-  o3: "#4BC0C0",    // ฟ้า
-  co: "#F9A825",    // เหลืองเข้ม
-  no2: "#9575CD",   // ม่วง
+  h2s1: "#FF6B6B",  // สีแดงอ่อน
+  h2s2: "#4BC0C0",    // ฟ้า
+  h2s3: "#F9A825",    // เหลืองเข้ม
+  h2s4: "#9575CD",   // ม่วง
 };
 
 const LineChartGas = ({ gasData, selectedSensor }) => {
@@ -40,6 +33,15 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
 
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
+
+  const formatTimestampX = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+  
 
   // ✅ ตรวจจับธีมเมื่อมีการเปลี่ยน dark/light
   useEffect(() => {
@@ -122,19 +124,19 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       };
     });
 
-    const referenceLines = Object.entries(SAFE_LIMITS)
-      .filter(([gas]) => gasNames.includes(gas))
-      .map(([gas, limit]) => ({
-        name: `${gas.toUpperCase()} Safe Limit`,
+    const referenceLines = gasData
+      .filter((gas) => gas.safe_limit !== undefined && gas.readings?.length)
+      .map((gas) => ({
+        name: `${gas.param} Safe Limit`,
         type: "line",
-        data: Array(timestamps.length).fill(limit),
+        data: Array(gas.readings.length).fill(gas.safe_limit),
         lineStyle: { type: "dashed", width: 2, color: "red" },
-        label: { show: true, position: "right", formatter: `${gas.toUpperCase()} ⚠️` },
+        label: { show: true, position: "right", formatter: `${gas.param} ⚠️` },
       }));
+
 
     const option = {
       title: {
-        text: `ค่าก๊าซ (PPM) - Sensor: ${selectedSensor}`,
         left: "center",
         textStyle: { fontSize: 16, fontWeight: "bold" },
       },
@@ -142,7 +144,7 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
         trigger: "axis",
         axisPointer: { type: "cross" },
         formatter: (params) => {
-          let tooltipText = `<strong>ค่าก๊าซ (ล่าสุด)</strong><br/>`;
+          let tooltipText = `<strong>ค่าก๊าซ</strong><br/>`;
           params.forEach((item) => {
             tooltipText += `${item.marker} ${item.seriesName}: <strong>${item.value}</strong> ppm<br/>`;
           });
@@ -157,17 +159,14 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       grid: { left: "10%", right: "10%", bottom: "20%", containLabel: true },
       xAxis: {
         type: "category",
-        data: timestamps.map((ts) => formatTimestamp(ts)),
+        data: timestamps.map((ts) => formatTimestampX(ts)),
         axisLabel: {
-          rotate: -20,
-          fontSize: 10,
-          color: isDarkTheme ? "#ccc" : "#333",
-          show: false, // รองรับ Dark mode
+          show: true, 
         },
       },
       yAxis: {
         type: "value",
-        name: "ppm",
+        name: "PPM",
         axisLabel: {
           formatter: (value) => parseFloat(value).toFixed(2),
         },
@@ -200,15 +199,15 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
   return (
     <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
-        ค่าก๊าซในอากาศ - Sensor: {selectedSensor}
+        ค่าก๊าซในอากาศ
       </h2>
-
+      <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {selectedSensor}</p>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
         อัปเดตล่าสุด : {formatShortDate(fakeClock)}
       </p>
 
       <div ref={chartRef} className="w-full h-[500px]" />
-        
+
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
         ✅ <strong>คำแนะนำ:</strong> คลิกชื่อก๊าซที่ด้านล่างกราฟ เพื่อเปิด/ปิดการแสดงผลของแต่ละตัว
         <br />

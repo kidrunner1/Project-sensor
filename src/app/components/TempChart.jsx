@@ -59,10 +59,18 @@ const TempChart = ({ sensorData }) => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  const formatTimestampX = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+  
+
   const option = {
     title: {
       left: "center",
-      text: `อุณหภูมิของ Sensor ${sensorData.id}`,
       textStyle: {
         fontSize: 16,
         fontWeight: "bold",
@@ -91,9 +99,8 @@ const TempChart = ({ sensorData }) => {
     },
     xAxis: {
       type: "category",
-      data: temperatureData.readings.map((reading) => formatTimestamp(reading.timestamp)),
-      axisLabel: { rotate: -20 },
-      show: false, // ❌ ซ่อน label แกน X
+      data: temperatureData.readings.map((reading) => formatTimestampX(reading.timestamp)),
+      show: true, // ❌ ซ่อน label แกน X
     },
     yAxis: {
       type: "value",
@@ -138,6 +145,7 @@ const TempChart = ({ sensorData }) => {
             {lastReading?.value.toFixed(2) || "N/A"}°C
           </span>
         </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {sensorData.id}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
         </p>

@@ -226,7 +226,7 @@ const Navbar = () => {
           <div className="relative">
             <button
               onClick={() => setNotificationOpen(!isNotificationOpen)}
-              className="relative"
+              className="relative mt-3"
             >
               <FiBell className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
               {/* 🔴 Badge แสดงจำนวนแจ้งเตือนที่ยังไม่ได้อ่าน */}
@@ -239,16 +239,16 @@ const Navbar = () => {
 
             {/* 🔽 Dropdown Notifications */}
             {isNotificationOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-md py-2 dropdown-menu">
-                <div className="px-5 py-3 bg-gray-100">
-                  <p className="text-sm font-semibold text-gray-900">การแจ้งเตือน</p>
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-md py-2 dropdown-menu z-50 ">
+                <div className="px-5 py-3 bg-gray-100 dark:bg-gray-700">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">การแจ้งเตือน</p>
                 </div>
                 <ul className="max-h-60 overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((notification) => (
                       <li
                         key={notification.id}
-                        className={`px-5 py-3 text-sm cursor-pointer hover:bg-gray-200 transition duration-200 ${notification.read ? "text-gray-600" : "text-black font-bold"
+                        className={`px-5 py-3 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-200 ${notification.read ? "text-gray-600 dark:text-gray-400" : "text-black dark:text-white font-bold"
                           }`}
                         onClick={() => markAsRead(notification.id)}
                       >
@@ -256,11 +256,12 @@ const Navbar = () => {
                       </li>
                     ))
                   ) : (
-                    <li className="px-5 py-3 text-sm text-gray-500">ไม่มีแจ้งเตือน</li>
+                    <li className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">ไม่มีแจ้งเตือน</li>
                   )}
                 </ul>
               </div>
             )}
+
           </div>
 
           {/* Profile Image + Dropdown */}

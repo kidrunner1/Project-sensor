@@ -1,9 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import WeatherCard from "@/app/components/WeatherCard";
 import SensorMap from "@/app/components/MapContent";
-import { FiSearch } from "react-icons/fi";
 import {
   FaCloudSunRain,
   FaWind,
@@ -42,14 +40,6 @@ export default function HomePage() {
             ]}
           />
         </motion.div>
-        {/* Right Panel - Weather & Highlights */}
-        <div className="col-span-1 space-y-6">
-
-          {/* Weather Summary */}
-          <WeatherCard />
-          
-        </div>
-
       </div>
     </div>
   );

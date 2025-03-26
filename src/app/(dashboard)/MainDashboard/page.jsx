@@ -75,7 +75,7 @@ const HomePageTest = () => {
     <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto dark:bg-gray-900 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">SENSOR DASHBOARD</h2>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">SENSOR DASHBOARD</h2>
 
         <div className="flex items-center gap-3">
           <Select
@@ -87,17 +87,37 @@ const HomePageTest = () => {
             onChange={(e) => setSelectedSensor(e.value)}
             className="w-48"
             styles={{
-              control: (base) => ({
+              control: (base, state) => ({
                 ...base,
                 backgroundColor: 'white',
                 color: 'black',
+                borderColor: state.isFocused ? '#007BFF' : '#ccc',
+                boxShadow: state.isFocused ? '0 0 0 1px #007BFF' : 'none',
+                '&:hover': {
+                  borderColor: '#007BFF',
+                },
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: 'black', // ✅ สีข้อความที่เลือก
+              }),
+              option: (base, state) => ({
+                ...base,
+                backgroundColor: state.isFocused ? '#e0e0e0' : '#f0f0f0',
+                color: 'black', // ✅ สีข้อความใน dropdown
+                cursor: 'pointer',
               }),
               menu: (base) => ({
                 ...base,
                 backgroundColor: '#f0f0f0',
               }),
+              input: (base) => ({
+                ...base,
+                color: 'black', // ✅ ตอนพิมพ์ค้นหา
+              }),
             }}
           />
+
 
           <button
             onClick={handleRefresh}
@@ -128,7 +148,6 @@ const HomePageTest = () => {
               <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
             )}
           </Suspense>
-
 
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex justify-center items-center h-[200px]">
             <p className="text-gray-700 dark:text-gray-300">เพิ่ม Component อื่น ๆ ตรงนี้</p>
