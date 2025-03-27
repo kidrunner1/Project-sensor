@@ -112,9 +112,10 @@ export default function Dashboard() {
           <option value="">🔽 กรุณาเลือก Sensor</option>
           {Object.keys(sensorData).map((sensorId) => (
             <option key={sensorId} value={sensorId}>
-              {sensorId}
+              {sensorData[sensorId]?.sensor_name || sensorId}
             </option>
           ))}
+
         </select>
 
       </div>
@@ -128,7 +129,10 @@ export default function Dashboard() {
         selectedSensor &&
         sensorData[selectedSensor] && (
           <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-500">
-            <h2 className="text-lg font-bold text-gray-800 dark:text-white">ข้อมูล SENSOR : {selectedSensor}</h2>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+              ข้อมูล SENSOR : {sensorData[selectedSensor]?.sensor_name || selectedSensor}
+            </h2>
+
 
             {/* Environmental Parameters */}
             <h3 className="mt-3 text-md font-semibold text-gray-700 dark:text-gray-200">

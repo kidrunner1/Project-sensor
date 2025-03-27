@@ -79,13 +79,17 @@ const HomePageTest = () => {
 
         <div className="flex items-center gap-3">
           <Select
-            options={Object.keys(sensorData).map((sensorId) => ({
+            options={Object.entries(sensorData).map(([sensorId, sensor]) => ({
               value: sensorId,
-              label: sensorId,
+              label: sensor.sensor_name || sensorId,
             }))}
-            value={{ value: selectedSensor, label: selectedSensor }}
+            value={{
+              value: selectedSensor,
+              label:
+                sensorData[selectedSensor]?.sensor_name || selectedSensor,
+            }}
             onChange={(e) => setSelectedSensor(e.value)}
-            className="w-48"
+            className="w-60"
             styles={{
               control: (base, state) => ({
                 ...base,
@@ -99,12 +103,12 @@ const HomePageTest = () => {
               }),
               singleValue: (base) => ({
                 ...base,
-                color: 'black', // ✅ สีข้อความที่เลือก
+                color: 'black',
               }),
               option: (base, state) => ({
                 ...base,
                 backgroundColor: state.isFocused ? '#e0e0e0' : '#f0f0f0',
-                color: 'black', // ✅ สีข้อความใน dropdown
+                color: 'black',
                 cursor: 'pointer',
               }),
               menu: (base) => ({
@@ -113,10 +117,11 @@ const HomePageTest = () => {
               }),
               input: (base) => ({
                 ...base,
-                color: 'black', // ✅ ตอนพิมพ์ค้นหา
+                color: 'black',
               }),
             }}
           />
+
 
 
           <button
@@ -167,7 +172,7 @@ const HomePageTest = () => {
               );
 
               return validGasData.length > 0 ? (
-                <LineChartGas gasData={validGasData} selectedSensor={selectedSensor} />
+                <LineChartGas gasData={validGasData} selectedSensor={selectedSensor}  sensorName={sensorData[selectedSensor]?.sensor_name} />
               ) : (
                 <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
               );

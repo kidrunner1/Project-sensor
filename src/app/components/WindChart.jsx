@@ -152,7 +152,9 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
       <div className="flex flex-col items-start">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">ความเร็วลม ({unit})</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {selectedSensor}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          เซ็นเซอร์ : {sensorData?.[selectedSensor]?.sensor_name || selectedSensor}
+        </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           อัปเดตล่าสุด : {formatShortDate(fakeClock)}
         </p>

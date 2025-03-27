@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { FiChevronRight, FiChevronLeft,FiMenu } from "react-icons/fi";
 import { FaHome, FaChartBar } from "react-icons/fa";
 import { IoIosArrowDown, IoMdSettings } from "react-icons/io";
 
@@ -74,7 +74,7 @@ const Sidebar = () => {
                   !isOpen && "hidden"
                 }`}
               >
-                {i.title}
+                ----- {i.title} -----
               </span>
 
               {i.items.map((item, index) => (

@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 
 const TempChart = ({ sensorData }) => {
-  if (!sensorData || !sensorData.environmental) return <p>❌ ไม่มีข้อมูล Sensor</p>;
+  if (!sensorData || !sensorData.environmental) return <p className="text-gray-900 dark:text-white">❌ ไม่มีข้อมูล Sensor</p>;
 
   const temperatureData = sensorData.environmental.find((entry) =>
     entry.param.toLowerCase().includes("temperature")
@@ -14,6 +14,23 @@ const TempChart = ({ sensorData }) => {
   const startClientTimeRef = useRef(null);
 
   const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
+
+  const filterTodayData = (readings, latestTimestamp) => {
+    const latestDate = new Date(latestTimestamp);
+    const latestDay = latestDate.getDate();
+    const latestMonth = latestDate.getMonth();
+    const latestYear = latestDate.getFullYear();
+
+    return readings.filter((r) => {
+      const d = new Date(r.timestamp);
+      return (
+        d.getDate() === latestDay &&
+        d.getMonth() === latestMonth &&
+        d.getFullYear() === latestYear
+      );
+    });
+  };
+
 
   // ✅ เช็คจริง ๆ ว่า timestamp เปลี่ยน
   useEffect(() => {
@@ -66,7 +83,9 @@ const TempChart = ({ sensorData }) => {
     const minutes = date.getMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-  
+
+  const latestTimestamp = temperatureData.readings.at(-1)?.timestamp;
+  const todayReadings = filterTodayData(temperatureData.readings, latestTimestamp);
 
   const option = {
     title: {
@@ -87,7 +106,7 @@ const TempChart = ({ sensorData }) => {
       axisPointer: { type: "cross" },
       formatter: (params) => {
         const index = params[0].dataIndex;
-        const timestamp = formatTimestamp(temperatureData.readings[index]?.timestamp);
+        const timestamp = formatTimestamp(todayReadings[index]?.timestamp);
         return `
           <div style="text-align: center;">
             <strong>อุณหภูมิ</strong><br/>
@@ -96,11 +115,12 @@ const TempChart = ({ sensorData }) => {
           </div>
         `;
       },
+
     },
     xAxis: {
       type: "category",
-      data: temperatureData.readings.map((reading) => formatTimestampX(reading.timestamp)),
-      show: true, // ❌ ซ่อน label แกน X
+      data: todayReadings.map((reading) => formatTimestampX(reading.timestamp)),
+      show: true,
     },
     yAxis: {
       type: "value",
@@ -113,7 +133,7 @@ const TempChart = ({ sensorData }) => {
       {
         name: "Temperature",
         type: "line",
-        data: temperatureData.readings.map((reading) => reading.value || 0),
+        data: todayReadings.map((reading) => reading.value || 0),
         smooth: true,
         showSymbol: true,
         symbolSize: 10,
@@ -145,7 +165,8 @@ const TempChart = ({ sensorData }) => {
             {lastReading?.value.toFixed(2) || "N/A"}°C
           </span>
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {sensorData.id}</p>
+        <p></p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {sensorData.sensor_name || "ไม่พบชื่อเซ็นเซอร์"}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
         </p>

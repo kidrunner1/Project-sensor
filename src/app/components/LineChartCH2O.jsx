@@ -9,7 +9,7 @@ const FIXED_GAS_COLORS = {
   h2s4: "#9575CD",   // ม่วง
 };
 
-const LineChartGas = ({ gasData, selectedSensor }) => {
+const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
   const chartRef = useRef(null);
   let myChart = useRef(null);
 
@@ -21,19 +21,6 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
     document.documentElement.classList.contains("dark")
   );
 
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "N/A";
-    const date = new Date(timestamp);
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = (date.getFullYear() + 543).toString().slice(-2); // เอา 2 หลักท้าย
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    const seconds = date.getSeconds().toString().padStart(2, "0");
-
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-  };
-
   const formatTimestampX = (timestamp) => {
     if (!timestamp) return "N/A";
     const date = new Date(timestamp);
@@ -41,7 +28,22 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
     const minutes = date.getMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-  
+
+  const filterTodayData = (readings, latestTimestamp) => {
+    const latestDate = new Date(latestTimestamp);
+    const latestDay = latestDate.getDate();
+    const latestMonth = latestDate.getMonth();
+    const latestYear = latestDate.getFullYear();
+
+    return readings.filter((r) => {
+      const d = new Date(r.timestamp);
+      return (
+        d.getDate() === latestDay &&
+        d.getMonth() === latestMonth &&
+        d.getFullYear() === latestYear
+      );
+    });
+  };
 
   // ✅ ตรวจจับธีมเมื่อมีการเปลี่ยน dark/light
   useEffect(() => {
@@ -96,9 +98,22 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       }
     }
 
+    const latestTimestamp = gasData[0]?.readings?.at(-1)?.timestamp;
+    const todayReadings = latestTimestamp
+      ? gasData[0]?.readings?.filter((r) => {
+        const d = new Date(r.timestamp);
+        const latest = new Date(latestTimestamp);
+        return (
+          d.getDate() === latest.getDate() &&
+          d.getMonth() === latest.getMonth() &&
+          d.getFullYear() === latest.getFullYear()
+        );
+      })
+      : [];
     const seriesData = gasNames.map((gas) => {
-      const gasReadings = gasData.find((g) => g.param === gas)?.readings || [];
-      const values = gasReadings.map((reading) => parseFloat(reading.value).toFixed(2)) || [];
+      const allReadings = gasData.find((g) => g.param === gas)?.readings || [];
+      const todayReadings = filterTodayData(allReadings, latestTimestamp);
+      const values = todayReadings.map((reading) => parseFloat(reading.value).toFixed(2));
 
       return {
         name: gas,
@@ -144,13 +159,25 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
         trigger: "axis",
         axisPointer: { type: "cross" },
         formatter: (params) => {
-          let tooltipText = `<strong>ค่าก๊าซ</strong><br/>`;
+          if (!params.length) return "";
+          const index = params[0].dataIndex;
+          const timestamp = todayReadings?.[index]?.timestamp;
+          const formattedTime = timestamp ? formatShortDate(timestamp) : "ไม่มีข้อมูลเวลา";
+
+          let tooltipHtml = `<div style="text-align: center;">
+            <strong>ค่าก๊าซในอากาศ</strong><br/>
+            ${formattedTime}<br/>
+          `;
+
           params.forEach((item) => {
-            tooltipText += `${item.marker} ${item.seriesName}: <strong>${item.value}</strong> ppm<br/>`;
+            tooltipHtml += `${item.marker} ${item.seriesName}: <strong>${item.value}</strong> ppm<br/>`;
           });
-          return tooltipText;
+
+          tooltipHtml += `</div>`;
+          return tooltipHtml;
         },
       },
+
       legend: {
         data: [...gasNames, ...referenceLines.map((line) => line.name)],
         bottom: 0,
@@ -159,9 +186,9 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       grid: { left: "10%", right: "10%", bottom: "20%", containLabel: true },
       xAxis: {
         type: "category",
-        data: timestamps.map((ts) => formatTimestampX(ts)),
+        data: todayReadings.map((r) => formatTimestampX(r.timestamp)),
         axisLabel: {
-          show: true, 
+          show: true,
         },
       },
       yAxis: {
@@ -201,7 +228,10 @@ const LineChartGas = ({ gasData, selectedSensor }) => {
       <h2 className="text-xl font-bold text-gray-900 dark:text-white text-start">
         ค่าก๊าซในอากาศ
       </h2>
-      <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {selectedSensor}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        เซ็นเซอร์ : {sensorName || selectedSensor}
+      </p>
+
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
         อัปเดตล่าสุด : {formatShortDate(fakeClock)}
       </p>
