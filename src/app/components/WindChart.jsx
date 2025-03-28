@@ -92,8 +92,9 @@ const WindChart = ({ sensorData, selectedSensor }) => {
             },
           },
           axisLabel: {
-            distance: 10,
+            distance: 20,
             fontSize: 10,
+            color: isDarkTheme ? "#fff" : "#333",
           },
           splitLine: {
             length: 10,
