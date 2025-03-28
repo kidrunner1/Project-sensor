@@ -40,7 +40,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     }
 
     const windSpeedParam = sensorData?.[selectedSensor]?.environmental?.find((param) =>
-      param.param.toLowerCase().includes("wind")
+      param.param.toLowerCase().includes("wind_speed")
     );
 
     if (!windSpeedParam) {

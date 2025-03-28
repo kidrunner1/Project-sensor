@@ -267,7 +267,7 @@ const Navbar = () => {
               onClick={() => setNotificationOpen(!isNotificationOpen)}
               className="relative mt-3"
             >
-              <FiBell className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition" />
+              <FiBell className="text-gray-600 text-xl cursor-pointer hover:text-gray-800 transition dark:text-white"/>
               {/* 🔴 Badge แสดงจำนวนแจ้งเตือนที่ยังไม่ได้อ่าน */}
               {notifications.filter((n) => !n.read).length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
