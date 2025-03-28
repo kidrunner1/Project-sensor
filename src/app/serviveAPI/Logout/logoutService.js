@@ -4,8 +4,8 @@
 // import Swal from "sweetalert2";
 
 // // ✅ URL API
-// // const REFRESH_API = `https://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
-// const LOGOUT_API = `https://${ipconfig.API_HOST}/api/auth/logout`;
+// // const REFRESH_API = `http://${ipconfig.API_HOST}/api/auth/refresh-access-token`;
+// const LOGOUT_API = `http://${ipconfig.API_HOST}/api/auth/logout`;
 
 // export async function logoutUser() {
 //     const accessToken = sessionStorage.getItem("access_token");
@@ -76,7 +76,7 @@ import axios from "axios";
 import ipconfig from "@/app/ipconfig";
 import Swal from "sweetalert2";
 
-const LOGOUT_API = `https://${ipconfig.API_HOST}/api/auth/logout`;
+const LOGOUT_API = `http://${ipconfig.API_HOST}/api/auth/logout`;
 
 export async function logoutUser() {
     const accessToken = sessionStorage.getItem("access_token");

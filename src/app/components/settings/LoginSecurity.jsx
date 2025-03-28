@@ -35,7 +35,7 @@ const LoginSecurity = () => {
       }
 
       const response = await axios.put(
-        `https://${ipconfig.API_HOST}/api/user/change-password`,
+        `http://${ipconfig.API_HOST}/api/user/change-password`,
         {
           currentPassword,
           newPassword,

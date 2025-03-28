@@ -18,7 +18,7 @@
 //         throw new Error("❌ API_SENSOR ไม่ถูกต้องใน ipconfig");
 //       }
 
-//       const API_URL = `https://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+//       const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
 
 //       const response = await axios.post(
 //         API_URL,
@@ -76,7 +76,7 @@
 // import ipconfig from "@/app/ipconfig";
 
 // // ✅ ใช้ Template Literal แทน
-// const API_URL = `https://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
+// const API_URL = `http://${ipconfig.API_SENSOR}/auth/get-sensor-data-mapping`;
 
 // export const useSensorStore = create((set) => ({
 //   sensorData: {},
@@ -153,7 +153,9 @@ export const useSensorStore = create((set) => ({
       existingWs.close();
     }
 
-    const wsUrl = `wss://${ipconfig.API_SENSOR}/wss/get-sensor-data-mapping?token=${accessToken}&user_id=${userId}&company_id=${companyId}`;
+    // const wsUrl = `wss://${ipconfig.API_SENSOR}/wss/get-sensor-data-mapping?token=${accessToken}&user_id=${userId}&company_id=${companyId}`;
+    // console.log("🌐 Connecting WebSocket to:", wsUrl);
+    const wsUrl = `ws://${ipconfig.API_SENSOR}/wss/get-sensor-data-mapping?token=${accessToken}&user_id=${userId}&company_id=${companyId}`;
     console.log("🌐 Connecting WebSocket to:", wsUrl);
 
     const ws = new WebSocket(wsUrl);
