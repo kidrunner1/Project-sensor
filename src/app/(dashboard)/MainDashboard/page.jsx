@@ -10,6 +10,7 @@ import Select from "react-select";
 const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
+const HumidityChart = lazy(() => import("../../components/HumidityChart"));
 
 const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
 const FullPageSkeleton = () => (
@@ -154,8 +155,15 @@ const HomePageTest = () => {
             )}
           </Suspense>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md flex justify-center items-center h-[200px]">
-            <p className="text-gray-700 dark:text-gray-300">เพิ่ม Component อื่น ๆ ตรงนี้</p>
+          <div className="flex flex-col h-full">
+            <Suspense fallback={<SkeletonChart />}>
+              {loading || !selectedSensor ? (
+                <SkeletonChart />
+              ) : (
+                <HumidityChart sensorData={{ ...sensorData[selectedSensor], sensor_name: sensorData[selectedSensor]?.sensor_name }} />
+              )}
+            </Suspense>
+
           </div>
         </div>
       </div>
@@ -172,7 +180,17 @@ const HomePageTest = () => {
               );
 
               return validGasData.length > 0 ? (
-                <LineChartGas gasData={validGasData} selectedSensor={selectedSensor}  sensorName={sensorData[selectedSensor]?.sensor_name} />
+                <Suspense fallback={<SkeletonChart />}>
+                  {loading || isLoadingSensor || !selectedSensor ? (
+                    <SkeletonChart />
+                  ) : (
+                    <LineChartGas
+                      gasData={validGasData}
+                      selectedSensor={selectedSensor}
+                      sensorName={sensorData[selectedSensor]?.sensor_name}
+                    />
+                  )}
+                </Suspense>
               ) : (
                 <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
               );
