@@ -19,6 +19,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     () => document.documentElement.classList.contains("dark")
   );
 
+  // ✅ ตรวจสอบการเปลี่ยนแปลงของธีม
   useEffect(() => {
     const observer = new MutationObserver(() => {
       setIsDarkTheme(document.documentElement.classList.contains("dark"));
@@ -32,6 +33,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     return () => observer.disconnect();
   }, []);
 
+  // ✅ ตรวจสอบการเปลี่ยนแปลงของ sensorData และ selectedSensor
   useEffect(() => {
     if (!chartRef.current || !sensorData || !selectedSensor) return;
 
@@ -39,6 +41,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
       myChart.current = echarts.init(chartRef.current, isDarkTheme ? "dark" : null);
     }
 
+    // ✅ ตรวจสอบว่ามีข้อมูลเซ็นเซอร์หรือไม่
     const windSpeedParam = sensorData?.[selectedSensor]?.environmental?.find((param) =>
       param.param.toLowerCase().includes("wind_speed")
     );
@@ -48,6 +51,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
       return;
     }
 
+    // ✅ ตรวจสอบว่ามีการอ่านค่าหรือไม่
     const lastReading = windSpeedParam?.readings?.[windSpeedParam.readings.length - 1] || {};
     let windSpeedValue = lastReading?.value ? parseFloat(lastReading.value.toFixed(2)) : 0;
 
@@ -67,7 +71,8 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     }
 
     setWindSpeed(windSpeedValue);
-
+    
+    // ✅ ปรับขนาดกราฟให้เหมาะสมกับธีม
     const option = {
       series: [
         {
@@ -137,6 +142,7 @@ const WindChart = ({ sensorData, selectedSensor }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ ฟังก์ชันสำหรับจัดรูปแบบวันที่และเวลา
   const formatShortDate = (timestamp) => {
     if (!timestamp) return "ไม่มีข้อมูล";
     const date = new Date(timestamp);

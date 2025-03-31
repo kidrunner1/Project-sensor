@@ -33,6 +33,22 @@ const Register = () => {
     phoneNumber: <IoPhonePortraitOutline className="text-zinc-800 m-2" />,
   };
 
+  const [passwordChecks, setPasswordChecks] = useState({
+    hasLowercase: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasMinLength: false,
+  });
+
+  const checkPasswordStrength = (password) => {
+    setPasswordChecks({
+      hasLowercase: /[a-z]/.test(password),
+      hasUppercase: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasMinLength: password.length >= 8,
+    });
+  };
+
   const placeholders = {
     username: "ชื่อผู้ใช้",
     email: "อีเมล",
@@ -48,8 +64,7 @@ const Register = () => {
     password: "รหัสผ่าน",
     confirmPassword: "ยืนยันรหัสผ่าน",
     phoneNumber: "เบอร์โทรศัพท์",
-    firstName: "ชื่อจริง",
-    lastName: "นามสกุล",
+    name: "ชื่อจริง",
   };
 
   const validateField = (name, value) => {
@@ -89,6 +104,10 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    if (name === "password") {
+      checkPasswordStrength(value); // ✅ เพิ่มตรงนี้
+    }
 
     if (touched[name]) {
       setErrors({ ...errors, [name]: validateField(name, value) });
@@ -203,7 +222,20 @@ const Register = () => {
 
                   {/* คำอธิบายเพิ่มเติมใต้ช่องกรอก */}
                   {field === "email" && <p className="text-xs text-gray-500 mt-1 text-left">กรุณากรอกอีเมลที่ใช้งานได้จริง</p>}
-                  {field === "password" && <p className="text-xs text-gray-500 mt-1 text-left">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</p>}
+                  {field === "password" && <div className="text-left mt-3 text-sm">
+                    <p className={`${passwordChecks.hasLowercase ? "text-green-500" : "text-gray-400"}`}>
+                      ✔ อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
+                    </p>
+                    <p className={`${passwordChecks.hasUppercase ? "text-green-500" : "text-gray-400"}`}>
+                      ✔ อักษรตัวพิมพ์ใหญ่อย่างน้อยหนึ่งตัว
+                    </p>
+                    <p className={`${passwordChecks.hasNumber ? "text-green-500" : "text-gray-400"}`}>
+                      ✔ อย่างน้อยหนึ่งหมายเลข
+                    </p>
+                    <p className={`${passwordChecks.hasMinLength ? "text-green-500" : "text-gray-400"}`}>
+                      ✔ ขั้นต่ำ 8 ตัวอักษร
+                    </p>
+                  </div>}
                 </div>
               ))}
 
