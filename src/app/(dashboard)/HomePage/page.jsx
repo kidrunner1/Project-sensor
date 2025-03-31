@@ -10,6 +10,7 @@ import {
   FaThermometerHalf,
 } from "react-icons/fa";
 import "mapbox-gl/dist/mapbox-gl.css";
+import WindDirectionChart from "@/app/components/WindDirectionChart";
 
 const weatherHighlights = [
   { icon: <FaWind className="text-blue-400 text-2xl" />, label: "ความเร็วลม", value: "3.4 m/s" },
@@ -33,12 +34,8 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">📍 ตำแหน่งเซ็นเซอร์</h3>
-          <SensorMap
-            sensorLocations={[
-              { name: "เซ็นเซอร์ 1", lat: 13.7563, lng: 100.5018, gasValue: 0.05 },
-              { name: "เซ็นเซอร์ 2", lat: 14.0200, lng: 100.5000, gasValue: 0.08 },
-            ]}
-          />
+          <WindDirectionChart/>
+          <SensorMap selectedSensor="sensor1" />
         </motion.div>
       </div>
     </div>

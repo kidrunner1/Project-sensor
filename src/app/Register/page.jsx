@@ -38,10 +38,12 @@ const Register = () => {
     hasUppercase: false,
     hasNumber: false,
     hasMinLength: false,
+    hasSpecialChar: false, // เพิ่มตัวตรวจสอบอักขระพิเศษ
   });
 
   const checkPasswordStrength = (password) => {
     setPasswordChecks({
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
       hasLowercase: /[a-z]/.test(password),
       hasUppercase: /[A-Z]/.test(password),
       hasNumber: /\d/.test(password),
@@ -223,6 +225,9 @@ const Register = () => {
                   {/* คำอธิบายเพิ่มเติมใต้ช่องกรอก */}
                   {field === "email" && <p className="text-xs text-gray-500 mt-1 text-left">กรุณากรอกอีเมลที่ใช้งานได้จริง</p>}
                   {field === "password" && <div className="text-left mt-3 text-sm">
+                    <p className={`${passwordChecks.hasSpecialChar ? "text-green-500" : "text-gray-400"}`}>
+                      ✔ รหัสผ่านต้องมีอักษรพิเศษ
+                    </p>
                     <p className={`${passwordChecks.hasLowercase ? "text-green-500" : "text-gray-400"}`}>
                       ✔ อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
                     </p>

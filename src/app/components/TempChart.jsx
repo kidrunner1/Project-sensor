@@ -141,17 +141,6 @@ const TempChart = ({ sensorData }) => {
         areaStyle: {
           color: "rgba(255, 204, 0, 0.3)",
         },
-        // markPoint: {
-        //   data: [
-        //     { type: "max", name: "สูงสุด", symbolSize: 14, itemStyle: { color: "red" } },
-        //     { type: "min", name: "ต่ำสุด", symbolSize: 14, itemStyle: { color: "blue" } },
-        //   ],
-        // },
-        // markLine: {
-        //   data: [
-        //     { yAxis: 25, name: "อุณหภูมิปลอดภัย", lineStyle: { color: "green", type: "dashed" } },
-        //   ],
-        // },
       },
     ],
   };
@@ -173,7 +162,7 @@ const TempChart = ({ sensorData }) => {
       </div>
 
       {/* ✅ แสดงกราฟ */}
-      <ReactECharts option={option} style={{ height: "400px", width: "100%" }} />
+      <ReactECharts option={option} style={{ height: "300px", width: "100%" }} />
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
         ⚠️ หากอุณหภูมิสูงหรือต่ำเกินไป อาจเป็นสัญญาณของความผิดปกติในระบบหรือสภาพแวดล้อม
       </p>

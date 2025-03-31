@@ -11,6 +11,8 @@ const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
 const HumidityChart = lazy(() => import("../../components/HumidityChart"));
+const SensorMapAllMarkers = lazy(() => import("../../components/MapContent"));
+const WindDirectionChart = lazy(() => import("../../components/WindDirectionChart"));
 
 const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
 const FullPageSkeleton = () => (
@@ -136,27 +138,47 @@ const HomePageTest = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        
-        <Suspense fallback={<SkeletonChart />}>
-          {loading || !selectedSensor ? (
-            <SkeletonChart />
-          ) : (
-            <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />
-          )}
-        </Suspense>
+      <div className="grid grid-cols-1 gap-4 w-full">
+        {/* ✅ Row 1: Map + TempChart */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[500px]">
+          {/* Sensor Map */}
+          <div className="h-full">
+            <Suspense fallback={<SkeletonChart />}>
+              {loading || !selectedSensor ? (
+                <SkeletonChart />
+              ) : (
+                <SensorMapAllMarkers selectedSensor={selectedSensor} />
+              )}
+            </Suspense>
+          </div>
 
-        <div className="flex flex-col gap-4 h-full ">
+          {/* Temp Chart */}
+          <div className="h-full">
+            <Suspense fallback={<SkeletonChart />}>
+              {loading || !selectedSensor ? (
+                <SkeletonChart />
+              ) : (
+                <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />
+              )}
+            </Suspense>
+          </div>
+        </div>
 
-          <Suspense fallback={<SkeletonChart />}>
-            {loading || !selectedSensor ? (
-              <SkeletonChart />
-            ) : (
-              <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
-            )}
-          </Suspense>
+        {/* ✅ Row 2: Wind + Humidity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+          {/* Wind Chart */}
+          <div className="h-full">
+            <Suspense fallback={<SkeletonChart />}>
+              {loading || !selectedSensor ? (
+                <SkeletonChart />
+              ) : (
+                <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
+              )}
+            </Suspense>
+          </div>
 
-          <div className="flex flex-col h-full">
+          {/* Humidity Chart */}
+          <div className="h-full">
             <Suspense fallback={<SkeletonChart />}>
               {loading || !selectedSensor ? (
                 <SkeletonChart />
@@ -164,10 +186,10 @@ const HomePageTest = () => {
                 <HumidityChart sensorData={{ ...sensorData[selectedSensor], sensor_name: sensorData[selectedSensor]?.sensor_name }} />
               )}
             </Suspense>
-
           </div>
         </div>
       </div>
+
 
       {/* Gas Chart */}
       <div className="shadow-xl">

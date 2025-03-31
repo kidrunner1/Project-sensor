@@ -1,96 +1,74 @@
 "use client";
-import React, { useState, useRef, useMemo, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, DivIcon } from "react-leaflet";
+import React, { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { FaMapMarkerAlt } from "react-icons/fa"; // ✅ นำเข้า FontAwesome
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
 
+// ตั้งค่า Default Marker
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+});
 
-// ✅ ตำแหน่งศูนย์กลางเริ่มต้น (กรุงเทพฯ)
-const center = {
-  lat: 13.736717,
-  lng: 100.523186,
-};
+const SensorMapAllMarkers = ({ selectedSensor }) => {
+  const { sensorData } = useSensorStore();
 
-// ✅ ใช้ DivIcon สำหรับ FontAwesome
-const createFontAwesomeIcon = (color = "red") => {
-  return L.divIcon({
-    html: `<div style="
-      font-size: 30px; 
-      color: ${color};
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-      ">
-      <i class="fas fa-map-marker-alt"></i>
-    </div>`,
-    className: "custom-marker-icon",
-    iconSize: [30, 30],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -30],
-  });
-};
+  const selected = sensorData[selectedSensor];
+  const environmental = selected?.environmental || [];
 
-const DraggableMarker = () => {
-  const [draggable, setDraggable] = useState(false);
-  const [position, setPosition] = useState(center);
-  const markerRef = useRef(null);
+  const latEntry = environmental.find((e) => e.param?.toLowerCase() === "gps_latitude");
+  const lngEntry = environmental.find((e) => e.param?.toLowerCase() === "gps_longitude");
 
-  // ✅ จัดการเหตุการณ์ลาก (Drag)
-  const eventHandlers = useMemo(
-    () => ({
-      dragend() {
-        const marker = markerRef.current;
-        if (marker != null) {
-          setPosition(marker.getLatLng()); // ✅ อัปเดตตำแหน่งใหม่หลังจากลาก
-        }
-      },
-    }),
-    []
-  );
+  const lat = parseFloat(latEntry?.readings?.[0]?.value);
+  const lng = parseFloat(lngEntry?.readings?.[0]?.value);
 
-  // ✅ ปิด/เปิดการลาก
-  const toggleDraggable = useCallback(() => {
-    setDraggable((d) => !d);
-  }, []);
+  const center = !isNaN(lat) && !isNaN(lng)
+    ? { lat, lng }
+    : { lat: 13.736717, lng: 100.523186 }; // fallback
+
+  const SensorMapUpdater = () => {
+    const map = useMap();
+
+    useEffect(() => {
+      if (!isNaN(lat) && !isNaN(lng)) {
+        map.flyTo([lat, lng], 13, { duration: 1 });
+      }
+    }, [lat, lng, map]);
+
+    return null;
+  };
+
+  if (isNaN(lat) || isNaN(lng)) {
+    return (
+      <div className="text-center text-gray-500 dark:text-gray-300 py-4">
+        ❌ ไม่พบพิกัด GPS ของเซ็นเซอร์ที่เลือก
+      </div>
+    );
+  }
 
   return (
-    <Marker
-      draggable={draggable}
-      eventHandlers={eventHandlers}
-      position={position}
-      ref={markerRef}
-      icon={createFontAwesomeIcon()} // ✅ ใช้ไอคอน FontAwesome ที่เราสร้าง
-    >
-      <Popup minWidth={90}>
-        <span onClick={toggleDraggable} className="cursor-pointer text-blue-600 font-semibold">
-          {draggable
-            ? "📍 ลาก Marker ได้แล้ว!"
-            : "🖱️ คลิกที่นี่เพื่อเปิดโหมดลาก Marker"}
-        </span>
-        <br />
-        <small className="text-gray-500">
-          ตำแหน่งปัจจุบัน: <br />
-          🌍 Lat: {position.lat.toFixed(6)} <br />
-          📍 Lng: {position.lng.toFixed(6)}
-        </small>
-      </Popup>
-    </Marker>
-  );
-};
-
-export default function MapWithDraggableMarker() {
-  return (
-    <div className="h-[500px] w-full">
+    <div className="h-full w-full rounded-lg overflow-hidden shadow-md">
       <MapContainer center={center} zoom={13} scrollWheelZoom={true} className="h-full w-full">
-        {/* ✅ Tile Layer (Google Maps หรือ OpenStreetMap) */}
+        <SensorMapUpdater />
+
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* ✅ Marker แบบลากได้ */}
-        <DraggableMarker />
+        <Marker position={center}>
+          <Popup>
+            <strong>{selected.sensor_name || `Sensor ${selectedSensor}`}</strong><br />
+            🌍 Lat: {lat.toFixed(6)}<br />
+            📍 Lng: {lng.toFixed(6)}
+          </Popup>
+        </Marker>
       </MapContainer>
     </div>
   );
-}
+};
+
+export default SensorMapAllMarkers;
