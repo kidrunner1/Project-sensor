@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { FiChevronRight, FiChevronLeft,FiMenu } from "react-icons/fi";
+import { FiChevronRight, FiChevronLeft, FiMenu } from "react-icons/fi";
 import { FaHome, FaChartBar } from "react-icons/fa";
 import { IoIosArrowDown, IoMdSettings } from "react-icons/io";
 
@@ -48,9 +48,8 @@ const Sidebar = () => {
   return (
     <div className="flex">
       <div
-        className={`h-screen bg-white dark:bg-gray-800 p-5 pt-8 relative duration-300 ${
-          isOpen ? "w-60" : "w-20"
-        }`}
+        className={`h-screen bg-white dark:bg-gray-800 p-5 pt-8 relative duration-300 ${isOpen ? "w-60" : "w-20"
+          }`}
       >
         {/* ปุ่ม Toggle */}
         <button
@@ -70,11 +69,10 @@ const Sidebar = () => {
           {menuItems.map((i) => (
             <div className="flex flex-col gap-2 text-center" key={i.title}>
               <span
-                className={`hidden lg:block text-gray-800 dark:text-gray-400 font-light my-4  uppercase tracking-wide ${
-                  !isOpen && "hidden"
-                }`}
+                className={`hidden lg:block text-gray-800 dark:text-gray-400 font-light my-4  uppercase tracking-wide ${!isOpen && "hidden"
+                  }`}
               >
-                ----- {i.title} -----
+                {i.title}
               </span>
 
               {i.items.map((item, index) => (
@@ -82,28 +80,24 @@ const Sidebar = () => {
                   {item.hasDropdown ? (
                     <button
                       onClick={() => toggleDropdown(index)}
-                      className={`flex items-center ${
-                        isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-gray-800 dark:text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-200 dark:hover:bg-gray-800 w-full ${
-                        openDropdown === index ? "bg-gray-200 dark:bg-gray-800" : ""
-                      }`}
+                      className={`flex items-center ${isOpen ? "justify-start" : "justify-center"
+                        } gap-4 text-gray-800 dark:text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-200 dark:hover:bg-gray-800 w-full ${openDropdown === index ? "bg-gray-200 dark:bg-gray-800" : ""
+                        }`}
                     >
                       {item.icon}
                       {isOpen && <span>{item.label}</span>}
                       {isOpen && (
                         <IoIosArrowDown
-                          className={`ml-auto transition-transform ${
-                            openDropdown === index ? "rotate-180" : ""
-                          }`}
+                          className={`ml-auto transition-transform ${openDropdown === index ? "rotate-180" : ""
+                            }`}
                         />
                       )}
                     </button>
                   ) : (
                     <Link
                       href={item.url}
-                      className={`flex items-center ${
-                        isOpen ? "justify-start" : "justify-center"
-                      } gap-4 text-gray-800 dark:text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-200 dark:hover:bg-gray-800 w-full`}
+                      className={`flex items-center ${isOpen ? "justify-start" : "justify-center"
+                        } gap-4 text-gray-800 dark:text-white py-2 px-3 rounded-lg transition duration-300 hover:bg-gray-200 dark:hover:bg-gray-800 w-full`}
                     >
                       {item.icon}
                       {isOpen && <span>{item.label}</span>}

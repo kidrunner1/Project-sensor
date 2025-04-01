@@ -17,6 +17,56 @@ export default function Dashboard() {
   const baseTimestampRef = useRef(null);
   const startClientTimeRef = useRef(null);
   const [fakeClock, setFakeClock] = useState(new Date());
+  const [dataTypeFilter, setDataTypeFilter] = useState("all"); // all | environmental | gas
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 100;
+
+  // กำหนดค่าเริ่มต้นสำหรับการแสดงผลข้อมูล
+  // Step 1: รวมข้อมูลพร้อม flag type
+  const rawReadings = [
+    ...(dataTypeFilter === "gas" || dataTypeFilter === "all"
+      ? sensorData[selectedSensor]?.gas.map((param) => ({
+        ...param,
+        param_type: "Gas",
+      })) || []
+      : []),
+    ...(dataTypeFilter === "environmental" || dataTypeFilter === "all"
+      ? sensorData[selectedSensor]?.environmental.map((param) => ({
+        ...param,
+        param_type: "Environmental",
+      })) || []
+      : []),
+  ]
+    .flatMap((param) =>
+      (param.readings || []).map((reading) => ({
+        ...reading,
+        id_param: param.id_param,
+        name: param.param,
+        type: param.param_type,
+      }))
+    )
+    .filter((r) => r.value !== null && r.timestamp);
+
+  // Step 2: Group by `name` และ sort ในกลุ่ม
+  const groupedByName = rawReadings.reduce((acc, reading) => {
+    if (!acc[reading.name]) acc[reading.name] = [];
+    acc[reading.name].push(reading);
+    return acc;
+  }, {});
+
+  // Step 3: เรียงในกลุ่มตาม timestamp
+  const sortedGrouped = Object.entries(groupedByName)
+    .sort(([a], [b]) => a.localeCompare(b)) // sort ตามชื่อ param
+    .flatMap(([_, group]) =>
+      group.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    );
+
+  // Step 4: Pagination
+  const totalPages = Math.ceil(sortedGrouped.length / rowsPerPage);
+  const paginatedReadings = sortedGrouped.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -109,17 +159,14 @@ export default function Dashboard() {
              dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           disabled={isLoadingSensor}
         >
-          <option value="">🔽 กรุณาเลือก Sensor</option>
+          <option value="">กรุณาเลือก Sensor</option>
           {Object.keys(sensorData).map((sensorId) => (
             <option key={sensorId} value={sensorId}>
               {sensorData[sensorId]?.sensor_name || sensorId}
             </option>
           ))}
-
         </select>
-
       </div>
-
       {isLoadingSensor ? (
         <div className="flex justify-center items-center mt-6">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -132,8 +179,6 @@ export default function Dashboard() {
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">
               ข้อมูล SENSOR : {sensorData[selectedSensor]?.sensor_name || selectedSensor}
             </h2>
-
-
             {/* Environmental Parameters */}
             <h3 className="mt-3 text-md font-semibold text-gray-700 dark:text-gray-200">
               Environmental Parameters
@@ -212,6 +257,75 @@ export default function Dashboard() {
           </div>
         )
       )}
+
+      {/* ALL DATA 100 ROW */}
+      <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-500">
+        <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+          ข้อมูล SENSOR : {sensorData[selectedSensor]?.sensor_name || selectedSensor}
+        </h2>
+        <div className="flex justify-between items-center mt-4">
+          <label className="text-gray-700 dark:text-gray-300 font-semibold">เลือกประเภทข้อมูล : </label>
+          <select
+            value={dataTypeFilter}
+            onChange={(e) => {
+              setDataTypeFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="p-2 rounded-md border text-gray-800 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="all">ทั้งหมด</option>
+            <option value="environmental">Environmental</option>
+            <option value="gas">Gas</option>
+          </select>
+        </div>
+
+        <table className="w-full mt-4 border-collapse border border-gray-300 dark:border-gray-600 text-sm">
+          <thead>
+            <tr className="bg-gray-200 dark:bg-gray-700">
+              {/* <th className="border p-2 text-gray-800 dark:text-white">ID Data</th> */}
+              <th className="border p-2 text-gray-800 dark:text-white">Type</th>
+              <th className="border p-2 text-gray-800 dark:text-white">Name</th>
+              <th className="border p-2 text-gray-800 dark:text-white">Value</th>
+              <th className="border p-2 text-gray-800 dark:text-white">Unit</th>
+              <th className="border p-2 text-gray-800 dark:text-white">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedReadings.map((r, index) => (
+              <tr key={`all-${r.id_param}-${index}`} className="text-center">
+
+                <td className="border p-2 text-gray-800 dark:text-white">{r.type}</td>
+                <td className="border p-2 text-gray-800 dark:text-white">{r.name}</td>
+                <td className="border p-2 text-gray-800 dark:text-white">{parseFloat(r.value).toFixed(2)}</td>
+                <td className="border p-2 text-gray-800 dark:text-white">{r.unit || ""}</td>
+                <td className="border p-2 text-gray-800 dark:text-white">{formatTimestamp(r.timestamp)}</td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-900 text-white rounded disabled:opacity-50 dark:bg-white dark:text-gray-800"
+          >
+            ก่อนหน้า
+          </button>
+          <span className="text-gray-800 dark:text-white font-medium">
+            หน้า {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-900 text-white rounded disabled:opacity-50 dark:bg-white dark:text-gray-800"
+          >
+            ถัดไป
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }
