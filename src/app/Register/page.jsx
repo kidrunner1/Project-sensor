@@ -51,6 +51,12 @@ const Register = () => {
     });
   };
 
+  const getCheckColor = (check) => {
+    if (password === "") return "text-red-500";
+    return check ? "text-green-500" : "text-gray-400";
+  };
+
+
   const placeholders = {
     username: "ชื่อผู้ใช้",
     email: "อีเมล",
@@ -224,6 +230,7 @@ const Register = () => {
 
                   {/* คำอธิบายเพิ่มเติมใต้ช่องกรอก */}
                   {field === "email" && <p className="text-xs text-gray-500 mt-1 text-left">กรุณากรอกอีเมลที่ใช้งานได้จริง</p>}
+                  {/* คำอธิบายเพิ่มเติมใต้ช่องกรอกPassword */}
                   {field === "password" && <div className="text-left mt-3 text-sm">
                     <p className={`${passwordChecks.hasSpecialChar ? "text-green-500" : "text-gray-400"}`}>
                       ✔ รหัสผ่านต้องมีอักษรพิเศษ
@@ -280,7 +287,6 @@ const Register = () => {
               </p>
             </form>
           </div>
-
 
           {/* RIGHT SECTION */}
           <div

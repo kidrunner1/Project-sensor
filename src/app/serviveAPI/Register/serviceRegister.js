@@ -109,10 +109,20 @@ export async function registerUser(name, email, phone, password, username) {
 
     try {
         const response = await axios.post(API_URL, userData);
-
-        return response.data.user; // ✅ คืนค่าเฉพาะข้อมูล user ที่ API ส่งกลับ
+        return response.data.user; // ✅ คืนค่าเฉพาะข้อมูล user
     } catch (error) {
-        throw new Error(`Registration failed: ${error.response?.data?.message || error.message}`);
+        const apiError = error.response?.data?.error;
+
+        if (apiError === "Weak password") {
+            throw new Error("รหัสผ่านไม่ปลอดภัย กรุณาใช้อักขระพิเศษ และตัวเลข");
+        }
+
+        if (apiError === "Email or phone already exists") {
+            throw new Error("อีเมลหรือเบอร์โทรศัพท์นี้มีการใช้งานแล้ว");
+        }
+
+        // Default
+        throw new Error(error.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก");
     }
 }
 

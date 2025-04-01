@@ -5,7 +5,7 @@ import { loginUser } from '@/app/serviveAPI/Login/serviceLogin';
 import Swal from 'sweetalert2';
 import { verifyOtp } from '@/app/serviveAPI/OTP/otpService'; // นำเข้า verifyOtp
 import Link from 'next/link';
-import { FaEnvelope, FaGoogle } from "react-icons/fa";
+import { FaEnvelope, FaGoogle, FaArrowLeft } from "react-icons/fa";
 import { MdLockOutline } from "react-icons/md";
 import dynamic from 'next/dynamic';
 import InputField from './components/InputField';
@@ -24,6 +24,29 @@ export default function Login() {
   const [errors, setErrors] = useState({ identifier: '', password: '', login: '' });
   const [expiresAt, setExpiresAt] = useState(null);
   const router = useRouter();
+  const [timeLeft, setTimeLeft] = useState(300); // 5 นาที = 300 วินาที
+
+  const formatTime = (seconds) => {
+    const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const sec = (seconds % 60).toString().padStart(2, '0');
+    return `${min}:${sec}`;
+  };
+
+  useEffect(() => {
+    if (!otpRequired) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [otpRequired]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,45 +57,6 @@ export default function Login() {
       }
     }
   }, []);
-
-
-  // const validateField = (name, value) => {
-  //   let error = '';
-
-  //   if (name === 'identifier') {
-  //     if (!value.trim()) {
-  //       error = 'กรุณากรอกชื่อผู้ใช้หรืออีเมล';
-  //     } else if (!/^[a-zA-Z0-9@.]+$/.test(value)) {
-  //       error = 'ชื่อผู้ใช้ต้องเป็น A-Z, a-z, 0-9 หรืออีเมลเท่านั้น';
-  //     }
-  //   }
-
-  //   if (name === 'password') {
-  //     if (!value.trim()) {
-  //       error = 'กรุณากรอกรหัสผ่าน';
-  //     } else if (value.length < 6) {
-  //       error = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-  //     }
-  //   }
-
-  //   setErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     [name]: error,
-  //   }));
-  // };
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   if (name === "identifier") setIdentifier(value);
-  //   if (name === "password") setPassword(value);
-
-  //   validateField(name, value); // ✅ ตรวจสอบค่าขณะพิมพ์
-  // };
-
-  // const handleBlur = (e) => {
-  //   const { name, value } = e.target;
-  //   validateField(name, value); // ✅ ตรวจสอบค่าทันทีที่ออกจากช่อง
-  // };
 
   // ✅ ฟังก์ชันตรวจสอบ Validation
   const validateInputs = () => {
@@ -165,6 +149,12 @@ export default function Login() {
     if (value && index < 5) {
       document.getElementById(`otp-${index + 1}`)?.focus();
     }
+  };
+
+  const handleCloseOtpModal = () => {
+    setOtpRequired(false);  // ปิด modal
+    setOtp(["", "", "", "", "", ""]);  // เคลียร์ OTP
+    setTimeLeft(300);  // รีเซ็ตเวลา ถ้าจะเปิดใหม่
   };
 
   const handleOtpSubmit = async () => {
@@ -357,9 +347,19 @@ export default function Login() {
 
       {/* ฟอร์ม OTP */}
       {otpRequired && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-zinc-800 p-6 rounded-lg shadow-lg w-[400px] text-center ">
-            {/* ไอคอนด้านบน */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="relative bg-zinc-800 p-6 rounded-lg shadow-lg w-[400px] text-center">
+
+            {/* ปุ่มกลับมุมซ้ายบน */}
+            <button
+              onClick={handleCloseOtpModal}
+              className="absolute top-3 left-3 text-white hover:text-red-400 text-xl font-bold"
+              aria-label="ปิด"
+            >
+              <FaArrowLeft />
+            </button>
+
+            {/* เนื้อหา OTP */}
             <div className='flex flex-col items-center'>
               <img src="/images/OTP.png" alt="OTP Icon" className='w-16 h-16' />
               <h2 className='text-xl font-bold mt-3 text-zinc-100'>ยืนยันที่อยู่อีเมลของคุณ</h2>
@@ -367,7 +367,8 @@ export default function Login() {
                 เราได้ส่งรหัส OTP ไปยังอีเมลของคุณ โปรดกรอกเพื่อดำเนินการต่อ.
               </p>
             </div>
-            {/* ช่องกรอก OTP แบบแยก 6 ช่อง */}
+
+            {/* ช่องกรอก OTP */}
             <div className='flex justify-center gap-2 mt-5'>
               {otp.map((num, index) => (
                 <input
@@ -377,19 +378,29 @@ export default function Login() {
                   maxLength={1}
                   value={num}
                   onChange={(e) => handleOtp(index, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(e, index)} // ✅ จัดการ Key Events
+                  onKeyDown={(e) => handleOtpKeyDown(e, index)}
                   className="w-12 text-gray-900 h-12 border-2 border-gray-300 rounded-md text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               ))}
             </div>
 
-            <button onClick={handleOtpSubmit}
-              className="mt-5 text-white border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800">
+            {/* ⏳ แสดงเวลา */}
+            <p className="mt-3 text-sm text-yellow-400">
+              🔒 OTP จะหมดอายุใน: <span className="font-mono">{formatTime(timeLeft)}</span>
+            </p>
+
+            {/* ปุ่มยืนยัน */}
+            <button
+              onClick={handleOtpSubmit}
+              disabled={timeLeft === 0}
+              className="mt-5 text-white border-2 border-white rounded-full px-8 md:px-12 py-2 font-semibold hover:bg-white hover:text-zinc-800 disabled:opacity-40"
+            >
               ยืนยัน OTP
             </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }

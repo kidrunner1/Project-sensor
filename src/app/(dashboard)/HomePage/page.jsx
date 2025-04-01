@@ -22,21 +22,10 @@ export default function HomePage() {
   return (
     <div className="p-6 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto">
       {/* Title */}
-      <h2 className="text-4xl font-bold text-gray-900 dark:text-white">🌎 Dashboard</h2>
+      <h2 className="text-4xl font-bold text-gray-900 dark:text-white">HOMEPAGE</h2>
 
       {/* Layout Grid */}
       <div className="grid md:grid-cols-3 gap-6">
-
-        {/*  Left Panel - Sensor Map */}
-        <motion.div
-          className="col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">📍 ตำแหน่งเซ็นเซอร์</h3>
-          <WindDirectionChart/>
-          <SensorMap selectedSensor="sensor1" />
-        </motion.div>
       </div>
     </div>
   );

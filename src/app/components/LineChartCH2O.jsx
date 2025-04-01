@@ -106,7 +106,6 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
     const latestTimestamp = gasData[0]?.readings?.at(-1)?.timestamp;
     const gasNames = gasData.map((g) => g.param);
     const colors = Object.fromEntries(gasNames.map((g) => [g, FIXED_GAS_COLORS[g.toLowerCase()] || "#999"]));
-    const todayReadings = gasData[0]?.readings?.filter((r) => isToday(r.timestamp, latestTs)) || [];
     const seriesData = gasNames.map((param) => {
       const allReadings = gasData.find((g) => g.param === param)?.readings || [];
       const filtered = filterByRange(allReadings, latestTimestamp, selectedRange);
@@ -135,8 +134,6 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
       };
     });
 
-    const xAxisTimestamps = filterByRange(gasData[0]?.readings || [], latestTimestamp, selectedRange)
-      .map((r) => formatTimeX(r.timestamp));
     const referenceLines = gasData
       .filter((g) => g.safe_limit !== undefined && g.readings?.length)
       .map((g) => ({
@@ -163,6 +160,23 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
           </div>`;
         },
       },
+      dataZoom: [
+        {
+          type: "slider",      // แถบ slider ลากซูม
+          show: true,
+          realtime: true,
+          start: 0,
+          end: 100,
+          bottom: 40,
+          height: 20,
+        },
+        {
+          type: "inside",      // ซูมด้วย mouse wheel หรือ pinch บนมือถือ
+          realtime: true,
+          start: 0,
+          end: 100,
+        },
+      ],
       legend: {
         data: [...gasNames, ...referenceLines.map((r) => r.name)],
         bottom: 0,

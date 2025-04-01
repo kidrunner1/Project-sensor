@@ -7,12 +7,12 @@ import { FiRefreshCcw } from "react-icons/fi";
 import Swal from "sweetalert2";
 import Select from "react-select";
 
+
 const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
 const HumidityChart = lazy(() => import("../../components/HumidityChart"));
 const SensorMapAllMarkers = lazy(() => import("../../components/MapContent"));
-const WindDirectionChart = lazy(() => import("../../components/WindDirectionChart"));
 
 const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
 const FullPageSkeleton = () => (

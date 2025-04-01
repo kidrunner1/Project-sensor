@@ -302,9 +302,8 @@ export default function Dashboard() {
               </tr>
             ))}
           </tbody>
-
         </table>
-
+        
         <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
@@ -324,7 +323,6 @@ export default function Dashboard() {
             ถัดไป
           </button>
         </div>
-
       </div>
     </div>
   );
