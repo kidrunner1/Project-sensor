@@ -62,8 +62,8 @@ const SensorMapAllMarkers = ({ selectedSensor }) => {
         <Marker position={center}>
           <Popup>
             <strong>{selected.sensor_name || `Sensor ${selectedSensor}`}</strong><br />
-            🌍 Lat: {lat.toFixed(6)}<br />
-            📍 Lng: {lng.toFixed(6)}
+            Lat: {lat.toFixed(6)}<br />
+            Lng: {lng.toFixed(6)}
           </Popup>
         </Marker>
       </MapContainer>

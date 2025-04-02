@@ -82,28 +82,6 @@ class UserRegister {
 // ✅ URL API
 const API_URL = `https://${ipconfig.API_HOST}/api/auth/register`;
 
-
-// ✅ ฟังก์ชันลงทะเบียนแบบ Manual (ลบ `: string` ออก)
-// export async function registerUser(name, email, phone, password, username) {
-//     const userData = new UserRegister(name, email, phone, password, username);
-
-//     try {
-//         const response = await axios.post(API_URL, {
-//             name: userData.name,
-//             email: userData.email,
-//             phone: userData.phone,
-//             password: userData.password,
-//             username: userData.username,
-//             avatar: userData.avatar, // API อาจให้ค่าเป็นค่าว่าง
-//             status: userData.status, // ตั้งเป็น "unspecified"
-//         });
-
-//         return response.data.user; // ✅ คืนค่าเฉพาะข้อมูล user ที่ API ส่งกลับ
-//     } catch (error) {
-//         throw new Error("Registration failed: " + (error.response?.data?.message || error.message));
-//     }
-// }
-
 export async function registerUser(name, email, phone, password, username) {
     const userData = { name, email, phone, password, username };
 
@@ -112,17 +90,36 @@ export async function registerUser(name, email, phone, password, username) {
         return response.data.user; // ✅ คืนค่าเฉพาะข้อมูล user
     } catch (error) {
         const apiError = error.response?.data?.error;
+        const details = error.response?.data?.details;
 
         if (apiError === "Weak password") {
-            throw new Error("รหัสผ่านไม่ปลอดภัย กรุณาใช้อักขระพิเศษ และตัวเลข");
+            const extra = Array.isArray(details)
+                ? `รหัสผ่านไม่ปลอดภัย\n${details.map((d) => `• ${d}`).join("\n")}`
+                : "รหัสผ่านไม่ปลอดภัย";
+
+            const error = new Error(extra);
+            error.details = details; // ✅ ส่ง array กลับด้วย
+            throw error;
         }
 
         if (apiError === "Email or phone already exists") {
             throw new Error("อีเมลหรือเบอร์โทรศัพท์นี้มีการใช้งานแล้ว");
         }
 
+        if (apiError === "Username already exists") {
+            throw new Error("ชื่อผู้ใช้มีการใช้งานแล้ว");
+        }
+
+        if (apiError === "Phone number already exists") {
+            throw new Error("หมายเลขโทรศัพท์นี้มีการใช้งานแล้ว");
+        }
+
+        if (apiError === "Failed to register user") {
+            throw new Error("ไม่สามารถลงทะเบียนผู้ใช้ได้ กรุณาลองใหม่อีกครั้ง");
+        }
         // Default
         throw new Error(error.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก");
     }
 }
+
 

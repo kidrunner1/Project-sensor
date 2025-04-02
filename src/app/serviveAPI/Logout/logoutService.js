@@ -108,7 +108,7 @@ export async function logoutUser() {
         const data = logoutResponse?.data || {};
 
         await Swal.fire({
-            text: data.message,
+            text: "ออกจากระบบสำเร็จ",
             icon: "success",
             toast: true,
             position: "top-end",

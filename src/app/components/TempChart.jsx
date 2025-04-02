@@ -2,18 +2,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 
-const TempChart = ({ sensorData }) => {
-  if (!sensorData || !sensorData.environmental) return <p className="text-gray-900 dark:text-white">❌ ไม่มีข้อมูล Sensor</p>;
-
+const TempChart = ({ sensorData, dateRange }) => {
+  if (!sensorData || !sensorData.environmental) return <p>ไม่มีข้อมูล Sensor</p>;
   const temperatureData = sensorData.environmental.find((entry) =>
     entry.param.toLowerCase().includes("temperature")
   );
-
+  if (!temperatureData || !Array.isArray(temperatureData.readings) || temperatureData.readings.length === 0) {
+    return <p className="text-gray-900 dark:text-white">⏳ กำลังโหลดข้อมูลอุณหภูมิ...</p>;
+  }
   const [fakeClock, setFakeClock] = useState(new Date());
   const baseTimestampRef = useRef(null);
   const startClientTimeRef = useRef(null);
 
   const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
+
 
   const filterTodayData = (readings, latestTimestamp) => {
     const latestDate = new Date(latestTimestamp);
@@ -30,7 +32,6 @@ const TempChart = ({ sensorData }) => {
       );
     });
   };
-
 
   // ✅ เช็คจริง ๆ ว่า timestamp เปลี่ยน
   useEffect(() => {
@@ -84,8 +85,32 @@ const TempChart = ({ sensorData }) => {
     return `${hours}:${minutes}`;
   };
 
-  const latestTimestamp = temperatureData.readings.at(-1)?.timestamp;
-  const todayReadings = filterTodayData(temperatureData.readings, latestTimestamp);
+  const formatDateShort = (date) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = (d.getMonth() + 1).toString().padStart(2, "0");
+    const year = (date.getFullYear() + 543).toString().slice(-2); // เอา 2 หลักท้าย
+    return `${day}/${month}/${year}`;
+  };
+
+  // const latestTimestamp = temperatureData.readings.at(-1)?.timestamp;
+  const isDateRangeSelected = dateRange?.startDate && dateRange?.endDate;
+  const getTodayReadings = (readings) => {
+    const now = new Date();
+    return readings.filter((r) => {
+      const t = new Date(r.timestamp);
+      return (
+        t.getDate() === now.getDate() &&
+        t.getMonth() === now.getMonth() &&
+        t.getFullYear() === now.getFullYear()
+      );
+    });
+  };
+
+  const readings = isDateRangeSelected
+    ? temperatureData.readings
+    : getTodayReadings(temperatureData.readings);
 
   const option = {
     title: {
@@ -106,7 +131,7 @@ const TempChart = ({ sensorData }) => {
       axisPointer: { type: "cross" },
       formatter: (params) => {
         const index = params[0].dataIndex;
-        const timestamp = formatTimestamp(todayReadings[index]?.timestamp);
+        const timestamp = formatTimestamp(readings[index]?.timestamp);
         return `
           <div style="text-align: center;">
             <strong>อุณหภูมิ</strong><br/>
@@ -115,11 +140,10 @@ const TempChart = ({ sensorData }) => {
           </div>
         `;
       },
-
     },
     xAxis: {
       type: "category",
-      data: todayReadings.map((reading) => formatTimestampX(reading.timestamp)),
+      data: readings.map((reading) => formatTimestampX(reading.timestamp)),
       show: true,
     },
     yAxis: {
@@ -133,7 +157,7 @@ const TempChart = ({ sensorData }) => {
       {
         name: "Temperature",
         type: "line",
-        data: todayReadings.map((reading) => reading.value || 0),
+        data: readings.map((reading) => reading.value || 0),
         smooth: true,
         showSymbol: true,
         symbolSize: 10,
@@ -150,19 +174,24 @@ const TempChart = ({ sensorData }) => {
       {/* ✅ แสดงอุณหภูมิล่าสุดแบบเด่นชัด */}
       <div className="text-start text-gray-800 dark:text-gray-100 mb-4">
         <h2 className="text-xl font-bold">
-          อุณหภูมิล่าสุด: <span className="text-2xl text-red-500">
-            {lastReading?.value.toFixed(2) || "N/A"}°C
-          </span>
+          อุณหภูมิ
         </h2>
         <p></p>
         <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {sensorData.sensor_name || "ไม่พบชื่อเซ็นเซอร์"}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
         </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          ช่วงวันที่เลือก :{" "}
+          {dateRange?.startDate && dateRange?.endDate
+            ? `${formatDateShort(dateRange.startDate)} ถึง ${formatDateShort(dateRange.endDate)}`
+            : "วันนี้"}
+        </p>
       </div>
-
       {/* ✅ แสดงกราฟ */}
-      <ReactECharts option={option} style={{ height: "300px", width: "100%" }} />
+      {readings.length > 0 && (
+        <ReactECharts option={option} style={{ height: "300px", width: "100%" }} />
+      )}
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
         ⚠️ หากอุณหภูมิสูงหรือต่ำเกินไป อาจเป็นสัญญาณของความผิดปกติในระบบหรือสภาพแวดล้อม
       </p>

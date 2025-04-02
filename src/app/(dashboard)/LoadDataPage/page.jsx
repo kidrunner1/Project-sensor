@@ -146,7 +146,7 @@ export default function Dashboard() {
     <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto dark:bg-gray-900 dark:text-white">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">SENSOR REPORT</h1>
 
-      {loading && <p className="text-3xl font-bold text-gray-800 dark:text-white">🔄 กำลังโหลดข้อมูล Sensor...</p>}
+      {loading && <p className="text-3xl font-bold text-gray-800 dark:text-white"> กำลังโหลดข้อมูล Sensor...</p>}
       {error && <p className="text-red-500">❌ {error}</p>}
 
       <div className="mt-4">

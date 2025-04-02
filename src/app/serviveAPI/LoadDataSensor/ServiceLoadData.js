@@ -138,12 +138,17 @@
 
 import { create } from "zustand";
 import ipconfig from "@/app/ipconfig";
+import { DateRange } from "react-date-range";
+import { setDate } from "date-fns";
 
 export const useSensorStore = create((set) => ({
   sensorData: {},
+  filteredSensorData: {}, // ✨ ข้อมูลที่ฟิลเตอร์ตาม DateRange แล้ว
   loading: false,
   error: null,
   ws: null,
+  DateRange: { startDate: null, endDate: null },
+  setDateRange: (range) => set({ DateRange: range }),
 
   connectWebSocket: (userId, companyId, accessToken) => {
     const { ws: existingWs } = useSensorStore.getState();
@@ -204,11 +209,6 @@ export const useSensorStore = create((set) => ({
       }
     };
 
-    // ws.onerror = (error) => {
-    //   console.error("❌ WebSocket Error:", error);
-    //   set({ error: "WebSocket error", loading: false });
-    // };
-
     ws.onclose = (event) => {
       console.warn("❌ WebSocket Closed");
       console.log("📴 Close Event:", event);
@@ -217,6 +217,72 @@ export const useSensorStore = create((set) => ({
     set({ ws });
   },
 
+  filterSensorDataByDateRange: (range) => {
+    const { sensorData } = useSensorStore.getState();
+    if (!range?.startDate || !range?.endDate) return;
+
+    const start = new Date(range.startDate).getTime();
+
+    const endDateObj = new Date(range.endDate);
+    endDateObj.setHours(23, 59, 59, 999); // Set to end of the day
+    const end = endDateObj.getTime();
+    
+    const filtered = {};
+
+    for (const [sensorId, sensor] of Object.entries(sensorData)) {
+      const filterReadings = (readings) =>
+        readings.filter((r) => {
+          const t = new Date(r.timestamp).getTime();
+          return t >= start && t <= end;
+        });
+
+      filtered[sensorId] = {
+        ...sensor,
+        environmental: sensor.environmental?.map((e) => ({
+          ...e,
+          readings: filterReadings(e.readings),
+        })),
+        gas: sensor.gas?.map((g) => ({
+          ...g,
+          readings: filterReadings(g.readings),
+        })),
+      };
+    }
+
+    set({ filteredSensorData: filtered });
+  },
+
+  filterSensorDataByToday: () => {
+    const { sensorData } = useSensorStore.getState();
+    const now = new Date();
+    const filtered = {};
+
+    for (const [sensorId, sensor] of Object.entries(sensorData)) {
+      const filterReadings = (readings) =>
+        readings.filter((r) => {
+          const d = new Date(r.timestamp);
+          return (
+            d.getDate() === now.getDate() &&
+            d.getMonth() === now.getMonth() &&
+            d.getFullYear() === now.getFullYear()
+          );
+        });
+
+      filtered[sensorId] = {
+        ...sensor,
+        environmental: sensor.environmental?.map((e) => ({
+          ...e,
+          readings: filterReadings(e.readings),
+        })),
+        gas: sensor.gas?.map((g) => ({
+          ...g,
+          readings: filterReadings(g.readings),
+        })),
+      };
+    }
+
+    set({ filteredSensorData: filtered });
+  },
   disconnectWebSocket: () => {
     const { ws } = useSensorStore.getState();
     if (ws) {

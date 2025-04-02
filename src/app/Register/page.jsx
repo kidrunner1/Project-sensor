@@ -18,6 +18,8 @@ const Register = () => {
     phoneNumber: "",
   });
 
+  const [isEmailFocused, setIsEmailFocused] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
@@ -174,10 +176,20 @@ const Register = () => {
         router.push("/");
       });
     } catch (error) {
+      const fullError = error.message || "ไม่สามารถสมัครสมาชิกได้";
+      const detailList = error.details || [];
+
       Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: error.message || "ไม่สามารถสมัครสมาชิกได้",
+        html: `
+          <p style="margin-bottom: 10px;">${fullError}</p>
+          ${Array.isArray(detailList)
+            ? `<ul style="text-align: left; padding-left: 20px; font-size: 14px;">
+                ${detailList.map((item) => `<li>• ${item}</li>`).join("")}
+              </ul>`
+            : ""}
+        `,
         confirmButtonText: "ตกลง",
       });
     } finally {
@@ -215,7 +227,16 @@ const Register = () => {
                       placeholder=" "
                       value={formData[field]}
                       onChange={handleChange}
-                      onBlur={handleBlur}
+                      onFocus={() => {
+                        if (field === "password" && setIsPasswordFocused(true));
+                        if (field === "email") setIsEmailFocused(true);
+                      }}
+                      onFocusCapture={() => field === "email" && setIsEmailFocused(true) && setIsPasswordFocused(false)}
+                      onBlur={(e) => {
+                        handleBlur(e);
+                        if (field === "password") setIsPasswordFocused(false);
+                        if (field === "email") setIsEmailFocused(false); // ✅ เพิ่มตรงนี้
+                      }}
                       className="bg-gray-100 outline-none text-sm flex-1 text-black placeholder-transparent peer"
                     />
 
@@ -229,25 +250,40 @@ const Register = () => {
                   {errors[field] && touched[field] && <p className="text-red-500 text-xs text-left">{errors[field]}</p>}
 
                   {/* คำอธิบายเพิ่มเติมใต้ช่องกรอก */}
-                  {field === "email" && <p className="text-xs text-gray-500 mt-1 text-left">กรุณากรอกอีเมลที่ใช้งานได้จริง</p>}
-                  {/* คำอธิบายเพิ่มเติมใต้ช่องกรอกPassword */}
-                  {field === "password" && <div className="text-left mt-3 text-sm">
-                    <p className={`${passwordChecks.hasSpecialChar ? "text-green-500" : "text-gray-400"}`}>
-                      ✔ รหัสผ่านต้องมีอักษรพิเศษ
+                  {field === "email" && (
+                    <p
+                      className={`text-xs text-left mt-1 transition-all duration-300 ease-in-out ${isEmailFocused ? "text-gray-500 opacity-100" : "opacity-0 max-h-0 pointer-events-none"
+                        }`}
+                    >
+                      กรุณากรอกอีเมลที่ใช้งานได้จริง
                     </p>
-                    <p className={`${passwordChecks.hasLowercase ? "text-green-500" : "text-gray-400"}`}>
-                      ✔ อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
-                    </p>
-                    <p className={`${passwordChecks.hasUppercase ? "text-green-500" : "text-gray-400"}`}>
-                      ✔ อักษรตัวพิมพ์ใหญ่อย่างน้อยหนึ่งตัว
-                    </p>
-                    <p className={`${passwordChecks.hasNumber ? "text-green-500" : "text-gray-400"}`}>
-                      ✔ อย่างน้อยหนึ่งหมายเลข
-                    </p>
-                    <p className={`${passwordChecks.hasMinLength ? "text-green-500" : "text-gray-400"}`}>
-                      ✔ ขั้นต่ำ 8 ตัวอักษร
-                    </p>
-                  </div>}
+                  )}
+
+                  {field === "password" && (
+                    <div
+                      className={`transition-all duration-500 ease-in-out overflow-hidden text-left mt-2 text-sm
+                     ${isPasswordFocused ? "opacity-100 max-h-96" : "opacity-0 max-h-0 pointer-events-none"}
+                   `}
+                    >
+                      <p className={`${passwordChecks.hasSpecialChar ? "text-green-500" : "text-gray-400"}`}>
+                        ✔ รหัสผ่านต้องมีอักษรพิเศษ
+                      </p>
+                      <p className={`${passwordChecks.hasLowercase ? "text-green-500" : "text-gray-400"}`}>
+                        ✔ อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
+                      </p>
+                      <p className={`${passwordChecks.hasUppercase ? "text-green-500" : "text-gray-400"}`}>
+                        ✔ อักษรตัวพิมพ์ใหญ่อย่างน้อยหนึ่งตัว
+                      </p>
+                      <p className={`${passwordChecks.hasNumber ? "text-green-500" : "text-gray-400"}`}>
+                        ✔ อย่างน้อยหนึ่งหมายเลข
+                      </p>
+                      <p className={`${passwordChecks.hasMinLength ? "text-green-500" : "text-gray-400"}`}>
+                        ✔ ขั้นต่ำ 8 ตัวอักษร
+                      </p>
+                    </div>
+                  )}
+
+
                 </div>
               ))}
 

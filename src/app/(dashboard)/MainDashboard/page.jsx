@@ -3,31 +3,42 @@
 import React, { Suspense, lazy, useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
-import { FiRefreshCcw } from "react-icons/fi";
+import { FiRefreshCcw, FiCalendar } from "react-icons/fi";
 import Swal from "sweetalert2";
 import Select from "react-select";
-
 
 const TempChart = lazy(() => import("../../components/TempChart"));
 const WindChart = lazy(() => import("../../components/WindChart"));
 const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
 const HumidityChart = lazy(() => import("../../components/HumidityChart"));
 const SensorMapAllMarkers = lazy(() => import("../../components/MapContent"));
+const CustomDatepicker = lazy(() => import("../../components/DateRangePicker"));
 
-const SkeletonChart = () => <div className="animate-pulse bg-gray-700 h-full w-full rounded-md"></div>;
-const FullPageSkeleton = () => (
-  <div className="flex flex-col gap-4 p-4">
-    <SkeletonChart />
-    <SkeletonChart />
+const SpinnerFullPage = () => (
+  <div className="flex justify-center items-center h-screen dark:bg-gray-900">
+    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
   </div>
 );
 
 const HomePageTest = () => {
   const { isAuthenticated } = useAuth();
-  const { sensorData, loading, error, connectWebSocket, disconnectWebSocket } = useSensorStore();
+  const { sensorData, loading, connectWebSocket, disconnectWebSocket, loadSensorByDateRange, filteredSensorData, DateRange, filterSensorDataByDateRange } = useSensorStore();
   const [isMounted, setIsMounted] = useState(false);
-  const [isLoadingSensor, setIsLoadingSensor] = useState(false);
   const [selectedSensor, setSelectedSensor] = useState("");
+  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+  // ก่อน return
+  const activeSensorData = DateRange?.startDate && DateRange?.endDate
+    ? filteredSensorData[selectedSensor]
+    : sensorData[selectedSensor]; // ยังไม่ได้เลือก → แสดงวันนี้
+
+
+
+  const handleDateChange = (range) => {
+    setDateRange(range);
+    if (range.startDate && range.endDate) {
+      filterSensorDataByDateRange(range); // ✅ ต้องมี!
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -50,12 +61,12 @@ const HomePageTest = () => {
 
   const handleRefresh = () => {
     Swal.fire({
-      title: "กำลังโหลดข้อมูลใหม่...",
+      title: "กำลังรีเฟรชข้อมูล...",
       timer: 1000,
       showConfirmButton: false,
       willClose: () => {
         Swal.fire({
-          title: "รีเฟรชสำเร็จ!",
+          title: "รีเฟรชข้อมูลสำเร็จ!",
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -64,12 +75,12 @@ const HomePageTest = () => {
     });
   };
 
-  if (!isMounted) return <FullPageSkeleton />;
+  if (!isMounted || loading || !selectedSensor) return <SpinnerFullPage />;
 
   if (!isAuthenticated) {
     return (
       <div className="flex justify-center items-center h-screen dark:bg-gray-900 dark:text-white">
-        🔄 กำลังโหลด...
+        กำลังโหลด...
       </div>
     );
   }
@@ -80,7 +91,10 @@ const HomePageTest = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-white">SENSOR DASHBOARD</h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap ">
+          <div className="relative inline-block  right-0  z-[9999] flex-1 rounded-lg ">
+            <CustomDatepicker onDateChange={handleDateChange} />
+          </div>
           <Select
             options={Object.entries(sensorData).map(([sensorId, sensor]) => ({
               value: sensorId,
@@ -88,8 +102,7 @@ const HomePageTest = () => {
             }))}
             value={{
               value: selectedSensor,
-              label:
-                sensorData[selectedSensor]?.sensor_name || selectedSensor,
+              label: sensorData[selectedSensor]?.sensor_name || selectedSensor,
             }}
             onChange={(e) => setSelectedSensor(e.value)}
             className="w-60"
@@ -100,33 +113,19 @@ const HomePageTest = () => {
                 color: 'black',
                 borderColor: state.isFocused ? '#007BFF' : '#ccc',
                 boxShadow: state.isFocused ? '0 0 0 1px #007BFF' : 'none',
-                '&:hover': {
-                  borderColor: '#007BFF',
-                },
+                '&:hover': { borderColor: '#007BFF' },
               }),
-              singleValue: (base) => ({
-                ...base,
-                color: 'black',
-              }),
+              singleValue: (base) => ({ ...base, color: 'black' }),
               option: (base, state) => ({
                 ...base,
                 backgroundColor: state.isFocused ? '#e0e0e0' : '#f0f0f0',
                 color: 'black',
                 cursor: 'pointer',
               }),
-              menu: (base) => ({
-                ...base,
-                backgroundColor: '#f0f0f0',
-              }),
-              input: (base) => ({
-                ...base,
-                color: 'black',
-              }),
+              menu: (base) => ({ ...base, backgroundColor: '#f0f0f0' }),
+              input: (base) => ({ ...base, color: 'black' }),
             }}
           />
-
-
-
           <button
             onClick={handleRefresh}
             className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center gap-2 hover:bg-blue-600 transition"
@@ -135,92 +134,40 @@ const HomePageTest = () => {
             รีเฟรช
           </button>
         </div>
+
+
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 gap-4 w-full">
-        {/* ✅ Row 1: Map + TempChart */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[500px]">
-          {/* Sensor Map */}
-          <div className="h-full">
-            <Suspense fallback={<SkeletonChart />}>
-              {loading || !selectedSensor ? (
-                <SkeletonChart />
-              ) : (
-                <SensorMapAllMarkers selectedSensor={selectedSensor} />
-              )}
-            </Suspense>
-          </div>
+          <Suspense fallback={<SpinnerFullPage />}>
+            <SensorMapAllMarkers selectedSensor={selectedSensor} />
+          </Suspense>
 
-          {/* Temp Chart */}
-          <div className="h-full">
-            <Suspense fallback={<SkeletonChart />}>
-              {loading || !selectedSensor ? (
-                <SkeletonChart />
-              ) : (
-                <TempChart sensorData={{ id: selectedSensor, ...sensorData[selectedSensor] }} />
-              )}
-            </Suspense>
-          </div>
+          <Suspense fallback={<SpinnerFullPage />}>
+            <TempChart sensorData={{ id: selectedSensor, ...activeSensorData }} dateRange={dateRange} />
+          </Suspense>
         </div>
 
-        {/* ✅ Row 2: Wind + Humidity */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-          {/* Wind Chart */}
-          <div className="h-full">
-            <Suspense fallback={<SkeletonChart />}>
-              {loading || !selectedSensor ? (
-                <SkeletonChart />
-              ) : (
-                <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
-              )}
-            </Suspense>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Suspense fallback={<SpinnerFullPage />}>
+            <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
+          </Suspense>
 
-          {/* Humidity Chart */}
-          <div className="h-full">
-            <Suspense fallback={<SkeletonChart />}>
-              {loading || !selectedSensor ? (
-                <SkeletonChart />
-              ) : (
-                <HumidityChart sensorData={{ ...sensorData[selectedSensor], sensor_name: sensorData[selectedSensor]?.sensor_name }} />
-              )}
-            </Suspense>
-          </div>
+          <Suspense fallback={<SpinnerFullPage />}>
+            <HumidityChart sensorData={{ ...sensorData[selectedSensor], sensor_name: sensorData[selectedSensor]?.sensor_name }} />
+          </Suspense>
         </div>
       </div>
 
-
-      {/* Gas Chart */}
       <div className="shadow-xl">
-        <Suspense fallback={<SkeletonChart />}>
-          {loading || isLoadingSensor || !selectedSensor ? (
-            <SkeletonChart />
-          ) : sensorData[selectedSensor] && Array.isArray(sensorData[selectedSensor].gas) ? (
-            (() => {
-              const validGasData = sensorData[selectedSensor].gas.filter(
-                (gas) => gas.readings && gas.readings.some((reading) => reading.value !== null)
-              );
-
-              return validGasData.length > 0 ? (
-                <Suspense fallback={<SkeletonChart />}>
-                  {loading || isLoadingSensor || !selectedSensor ? (
-                    <SkeletonChart />
-                  ) : (
-                    <LineChartGas
-                      gasData={validGasData}
-                      selectedSensor={selectedSensor}
-                      sensorName={sensorData[selectedSensor]?.sensor_name}
-                    />
-                  )}
-                </Suspense>
-              ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซที่พร้อมใช้งาน</p>
-              );
-            })()
-          ) : (
-            <p className="text-center text-gray-500 dark:text-gray-400">❌ ไม่มีข้อมูลก๊าซ</p>
-          )}
+        <Suspense fallback={<SpinnerFullPage />}>
+          <LineChartGas
+            gasData={sensorData[selectedSensor].gas?.filter(g => g.readings && g.readings.some(r => r.value !== null)) || []}
+            selectedSensor={selectedSensor}
+            sensorName={sensorData[selectedSensor]?.sensor_name}
+          />
         </Suspense>
       </div>
     </div>
