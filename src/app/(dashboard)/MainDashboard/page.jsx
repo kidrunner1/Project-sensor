@@ -7,10 +7,10 @@ import { FiRefreshCcw, FiCalendar } from "react-icons/fi";
 import Swal from "sweetalert2";
 import Select from "react-select";
 
-const TempChart = lazy(() => import("../../components/TempChart"));
-const WindChart = lazy(() => import("../../components/WindChart"));
-const LineChartGas = lazy(() => import("../../components/LineChartCH2O"));
-const HumidityChart = lazy(() => import("../../components/HumidityChart"));
+const TempChart = lazy(() => import("../../components/Chart/TempChart"));
+const WindChart = lazy(() => import("../../components/Chart/WindChart"));
+const LineChartGas = lazy(() => import("../../components/Chart/LineChartCH2O"));
+const HumidityChart = lazy(() => import("../../components/Chart/HumidityChart"));
 const SensorMapAllMarkers = lazy(() => import("../../components/MapContent"));
 const CustomDatepicker = lazy(() => import("../../components/DateRangePicker"));
 
@@ -167,6 +167,7 @@ const HomePageTest = () => {
             gasData={sensorData[selectedSensor].gas?.filter(g => g.readings && g.readings.some(r => r.value !== null)) || []}
             selectedSensor={selectedSensor}
             sensorName={sensorData[selectedSensor]?.sensor_name}
+            dateRange={dateRange} // ✅ เพิ่มตรงนี้!
           />
         </Suspense>
       </div>

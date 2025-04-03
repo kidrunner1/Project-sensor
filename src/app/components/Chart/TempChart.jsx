@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 
 const TempChart = ({ sensorData, dateRange }) => {
@@ -13,24 +13,25 @@ const TempChart = ({ sensorData, dateRange }) => {
   const [fakeClock, setFakeClock] = useState(new Date());
   const baseTimestampRef = useRef(null);
   const startClientTimeRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
   const lastReading = temperatureData.readings[temperatureData.readings.length - 1];
 
+  const saveGraphAsImage = () => {
+    const chart = chartInstanceRef.current?.getEchartsInstance();
+    if (!chart) return;
 
-  const filterTodayData = (readings, latestTimestamp) => {
-    const latestDate = new Date(latestTimestamp);
-    const latestDay = latestDate.getDate();
-    const latestMonth = latestDate.getMonth();
-    const latestYear = latestDate.getFullYear();
-
-    return readings.filter((r) => {
-      const d = new Date(r.timestamp);
-      return (
-        d.getDate() === latestDay &&
-        d.getMonth() === latestMonth &&
-        d.getFullYear() === latestYear
-      );
+    const imgData = chart.getDataURL({
+      type: "png",
+      pixelRatio: 2,
+      backgroundColor: "#ffffff", // หรือใช้ dark ถ้าเป็นกราฟโหมดมืด
     });
+
+    // ✅ สร้างลิงก์แล้วดาวน์โหลดอัตโนมัติ
+    const link = document.createElement("a");
+    link.href = imgData;
+    link.download = `temperature-chart-${new Date().toISOString()}.png`;
+    link.click();
   };
 
   // ✅ เช็คจริง ๆ ว่า timestamp เปลี่ยน
@@ -97,8 +98,22 @@ const TempChart = ({ sensorData, dateRange }) => {
   // const latestTimestamp = temperatureData.readings.at(-1)?.timestamp;
   const isDateRangeSelected = dateRange?.startDate && dateRange?.endDate;
   const getTodayReadings = (readings) => {
-    const now = new Date();
+    const today = new Date();
     return readings.filter((r) => {
+      const t = new Date(r.timestamp);
+      return (
+        t.getDate() === today.getDate() &&
+        t.getMonth() === today.getMonth() &&
+        t.getFullYear() === today.getFullYear()
+      );
+    });
+  };
+
+  const readings = useMemo(() => {
+    if (isDateRangeSelected) return temperatureData.readings;
+
+    const now = new Date();
+    return temperatureData.readings.filter((r) => {
       const t = new Date(r.timestamp);
       return (
         t.getDate() === now.getDate() &&
@@ -106,13 +121,9 @@ const TempChart = ({ sensorData, dateRange }) => {
         t.getFullYear() === now.getFullYear()
       );
     });
-  };
+  }, [temperatureData.readings, isDateRangeSelected]);
 
-  const readings = isDateRangeSelected
-    ? temperatureData.readings
-    : getTodayReadings(temperatureData.readings);
-
-  const option = {
+  const option = useMemo(() => ({
     title: {
       left: "center",
       textStyle: {
@@ -167,7 +178,7 @@ const TempChart = ({ sensorData, dateRange }) => {
         },
       },
     ],
-  };
+  }), [readings]);
 
   return (
     <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
@@ -188,9 +199,16 @@ const TempChart = ({ sensorData, dateRange }) => {
             : "วันนี้"}
         </p>
       </div>
+      {/* ✅ ปุ่ม Save */}
+      <button
+        onClick={saveGraphAsImage}
+        className="text-sm bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+      >
+      บันทึกกราฟ
+      </button>
       {/* ✅ แสดงกราฟ */}
       {readings.length > 0 && (
-        <ReactECharts option={option} style={{ height: "300px", width: "100%" }} />
+        <ReactECharts ref={chartInstanceRef} option={option} style={{ height: "300px", width: "100%" }} />
       )}
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
         ⚠️ หากอุณหภูมิสูงหรือต่ำเกินไป อาจเป็นสัญญาณของความผิดปกติในระบบหรือสภาพแวดล้อม

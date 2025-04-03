@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as echarts from "echarts";
 import { FaEllipsisH } from "react-icons/fa";
 
@@ -16,7 +16,6 @@ const formatTimestamp = (ts) => {
   const pad = (n) => n.toString().padStart(2, "0");
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${(d.getFullYear() + 543).toString().slice(-2)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
-
 const formatTimeX = (ts) => {
   const d = new Date(ts);
   return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
@@ -27,7 +26,8 @@ const isToday = (ts, latest) => {
   return d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
 };
 
-const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
+const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
+  
   const chartRef = useRef(null);
   const myChart = useRef(null);
   const [fakeClock, setFakeClock] = useState(new Date());
@@ -35,7 +35,8 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
   const clientStart = useRef(null);
   const [selectedRange, setSelectedRange] = useState("today");
   const timeRanges = {
-    "5m": 5 * 60 * 1000,
+    "15m": 15 * 60 * 1000,
+    "30m": 30 * 60 * 1000,
     "1h": 60 * 60 * 1000,
     "6h": 6 * 60 * 60 * 1000,
     "12h": 12 * 60 * 60 * 1000,
@@ -45,6 +46,15 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+
+  const formatDateShort = (date) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, "0");
+    const month = (d.getMonth() + 1).toString().padStart(2, "0");
+    const year = (date.getFullYear() + 543).toString().slice(-2); // เอา 2 หลักท้าย
+    return `${day}/${month}/${year}`;
+  };
 
   const filterByRange = (readings, latestTs, range) => {
     if (!latestTs) return [];
@@ -60,6 +70,24 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
 
   const [showRangeMenu, setShowRangeMenu] = useState(false);
   const rangeMenuRef = useRef(null);
+
+  const filterReadingsByDate = (readings) => {
+    if (!dateRange?.startDate || !dateRange?.endDate) {
+      // fallback → ใช้ range ปกติ
+      return filterByRange(readings, readings.at(-1)?.timestamp, selectedRange);
+    }
+  
+    const start = new Date(dateRange.startDate).getTime();
+    const endDateObj = new Date(dateRange.endDate);
+    endDateObj.setHours(23, 59, 59, 999); // ✅ ครอบคลุมทั้งวันสุดท้าย
+    const end = endDateObj.getTime();
+  
+    return readings.filter((r) => {
+      const ts = new Date(r.timestamp).getTime();
+      return ts >= start && ts <= end;
+    });
+  };
+  
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -89,6 +117,10 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
     return () => clearInterval(timer);
   }, []);
 
+  const latestTimestamp = useMemo(() => {
+    return gasData[0]?.readings?.at(-1)?.timestamp;
+  }, [gasData]);
+
   useEffect(() => {
     if (!chartRef.current || gasData.length === 0) return;
 
@@ -103,12 +135,13 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
         clientStart.current = new Date();
       }
     }
-    const latestTimestamp = gasData[0]?.readings?.at(-1)?.timestamp;
+    
+    // const latestTimestamp = gasData[0]?.readings?.at(-1)?.timestamp;
     const gasNames = gasData.map((g) => g.param);
     const colors = Object.fromEntries(gasNames.map((g) => [g, FIXED_GAS_COLORS[g.toLowerCase()] || "#999"]));
     const seriesData = gasNames.map((param) => {
       const allReadings = gasData.find((g) => g.param === param)?.readings || [];
-      const filtered = filterByRange(allReadings, latestTimestamp, selectedRange);
+      const filtered = filterReadingsByDate(allReadings, latestTimestamp, selectedRange);
       const values = filtered.map((r) => parseFloat(r.value).toFixed(2));
 
       return {
@@ -151,7 +184,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
         axisPointer: { type: "cross" },
         formatter: (params) => {
           const i = params[0]?.dataIndex;
-          const filtered = filterByRange(gasData[0]?.readings || [], latestTimestamp, selectedRange);
+          const filtered = filterReadingsByDate(gasData[0]?.readings || [], latestTimestamp, selectedRange);
           const ts = filtered?.[i]?.timestamp;
           return `<div style="text-align: center;">
             <strong>ค่าก๊าซในอากาศ</strong><br/>
@@ -185,7 +218,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
       grid: { left: "10%", right: "10%", bottom: "20%", containLabel: true },
       xAxis: {
         type: "category",
-        data: filterByRange(gasData[0]?.readings || [], latestTimestamp, selectedRange)
+        data: filterReadingsByDate(gasData[0]?.readings || [], latestTimestamp, selectedRange)
           .map((r) => formatTimeX(r.timestamp)),
       },
       yAxis: {
@@ -209,6 +242,12 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
         อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
       </p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+          ช่วงวันที่เลือก :{" "}
+          {dateRange?.startDate && dateRange?.endDate
+            ? `${formatDateShort(dateRange.startDate)} ถึง ${formatDateShort(dateRange.endDate)}`
+            : "วันนี้"}
+        </p>
 
       {/* ✅ ปุ่มเลือกช่วงเวลา (มุมขวาบนของกราฟ) */}
       <div className="absolute top-4 right-4 z-50" ref={rangeMenuRef}>
@@ -223,7 +262,8 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
         {showRangeMenu && (
           <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg z-50">
             {[
-              { label: "5 นาที", value: "5m" },
+              { label: "15 นาที", value: "15m" },
+              { label: "30 นาที", value: "30m" },
               { label: "1 ชั่วโมง", value: "1h" },
               { label: "6 ชั่วโมง", value: "6h" },
               { label: "12 ชั่วโมง", value: "12h" },
@@ -256,12 +296,9 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName }) => {
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
         ✅ <strong>คำแนะนำ:</strong> คลิกชื่อก๊าซที่ด้านล่างกราฟ เพื่อเปิด/ปิดการแสดงผลของแต่ละตัว<br />
         ⚠️ ค่าก๊าซที่สูงกว่ามาตรฐานอาจส่งผลกระทบต่อสุขภาพ<br />
-        🟢 ปลอดภัย | 🔵 เฝ้าระวัง | 🔴 อันตราย
       </p>
     </div>
-
   );
 };
 
 export default LineChartGas;
-

@@ -266,19 +266,19 @@ const Register = () => {
                    `}
                     >
                       <p className={`${passwordChecks.hasSpecialChar ? "text-green-500" : "text-gray-400"}`}>
-                        ✔ รหัสผ่านต้องมีอักษรพิเศษ
+                        รหัสผ่านต้องมีอักษรพิเศษ
                       </p>
                       <p className={`${passwordChecks.hasLowercase ? "text-green-500" : "text-gray-400"}`}>
-                        ✔ อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
+                        อักษรตัวพิมพ์เล็กอย่างน้อยหนึ่งตัว
                       </p>
                       <p className={`${passwordChecks.hasUppercase ? "text-green-500" : "text-gray-400"}`}>
-                        ✔ อักษรตัวพิมพ์ใหญ่อย่างน้อยหนึ่งตัว
+                        อักษรตัวพิมพ์ใหญ่อย่างน้อยหนึ่งตัว
                       </p>
                       <p className={`${passwordChecks.hasNumber ? "text-green-500" : "text-gray-400"}`}>
-                        ✔ อย่างน้อยหนึ่งหมายเลข
+                        อย่างน้อยหนึ่งหมายเลข
                       </p>
                       <p className={`${passwordChecks.hasMinLength ? "text-green-500" : "text-gray-400"}`}>
-                        ✔ ขั้นต่ำ 8 ตัวอักษร
+                        xขั้นต่ำ 8 ตัวอักษร
                       </p>
                     </div>
                   )}

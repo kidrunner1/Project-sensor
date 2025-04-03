@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { FiChevronRight, FiChevronLeft, FiMenu } from "react-icons/fi";
-import { FaHome, FaChartBar } from "react-icons/fa";
+import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { FaHome, FaChartLine } from "react-icons/fa";
 import { IoIosArrowDown, IoMdSettings } from "react-icons/io";
 
 // ✅ เมนู
@@ -17,7 +17,7 @@ const menuItems = [
         hasDropdown: false,
       },
       {
-        icon: <FaChartBar />,
+        icon: <FaChartLine />,
         label: "Dashboard",
         url: "#",
         hasDropdown: true,
