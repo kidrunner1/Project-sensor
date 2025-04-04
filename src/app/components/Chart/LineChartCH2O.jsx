@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as echarts from "echarts";
 import { FaEllipsisH } from "react-icons/fa";
+import { ArrowDownToLine } from "lucide-react"; // ✅ ใช้ไอคอนจาก lucide-react
+import html2canvas from "html2canvas";
 
 const FIXED_GAS_COLORS = {
   h2s1: "#FF6B6B",
@@ -27,12 +29,13 @@ const isToday = (ts, latest) => {
 };
 
 const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
-  
+
   const chartRef = useRef(null);
   const myChart = useRef(null);
   const [fakeClock, setFakeClock] = useState(new Date());
   const baseTime = useRef(null);
   const clientStart = useRef(null);
+  const chartInstanceRef = useRef(null);
   const [selectedRange, setSelectedRange] = useState("today");
   const timeRanges = {
     "15m": 15 * 60 * 1000,
@@ -46,6 +49,31 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.classList.contains("dark")
   );
+
+  const graphRef = useRef(null); // ใช้ ref เพื่อเลือกกราฟ
+
+  const handleCaptureScreenshot = async () => {
+    if (!graphRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(graphRef.current, {
+        scale: 3, // ปรับเพิ่มความละเอียดภาพ (สูงสุดที่ต้องการ)
+        width: graphRef.current.scrollWidth, // กำหนดขนาดที่ต้องการตามขนาดของ div
+        height: graphRef.current.scrollHeight, // ขยายพื้นที่แคปเจอร์ในแนวตั้ง
+        useCORS: true, // ใช้ CORS เพื่อดึงข้อมูลจากแหล่งที่มาภายนอก
+      });
+
+      const image = canvas.toDataURL("image/png");
+
+      // สร้างลิงก์สำหรับดาวน์โหลด
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = `graph-${new Date().toISOString()}.png`;
+      link.click();
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการบันทึกรูปภาพ", error);
+    }
+  };
 
   const formatDateShort = (date) => {
     if (!date) return "N/A";
@@ -76,18 +104,18 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
       // fallback → ใช้ range ปกติ
       return filterByRange(readings, readings.at(-1)?.timestamp, selectedRange);
     }
-  
+
     const start = new Date(dateRange.startDate).getTime();
     const endDateObj = new Date(dateRange.endDate);
     endDateObj.setHours(23, 59, 59, 999); // ✅ ครอบคลุมทั้งวันสุดท้าย
     const end = endDateObj.getTime();
-  
+
     return readings.filter((r) => {
       const ts = new Date(r.timestamp).getTime();
       return ts >= start && ts <= end;
     });
   };
-  
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -126,6 +154,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
 
     const chart = myChart.current || echarts.init(chartRef.current, isDark ? "dark" : null);
     myChart.current = chart;
+    chartInstanceRef.current = chart; // เพิ่มบรรทัดนี้
 
     const latestTs = gasData[0]?.readings?.at(-1)?.timestamp || "";
     if (latestTs) {
@@ -135,7 +164,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
         clientStart.current = new Date();
       }
     }
-    
+
     // const latestTimestamp = gasData[0]?.readings?.at(-1)?.timestamp;
     const gasNames = gasData.map((g) => g.param);
     const colors = Object.fromEntries(gasNames.map((g) => [g, FIXED_GAS_COLORS[g.toLowerCase()] || "#999"]));
@@ -143,7 +172,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
       const allReadings = gasData.find((g) => g.param === param)?.readings || [];
       const filtered = filterReadingsByDate(allReadings, latestTimestamp, selectedRange);
       const values = filtered.map((r) => parseFloat(r.value).toFixed(2));
-
+      
       return {
         name: param,
         type: "line",
@@ -236,21 +265,24 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
   }, [gasData, selectedSensor, isDark]);
 
   return (
-    <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800 relative">
+    <div ref={graphRef} className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800 relative">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white">ค่าก๊าซในอากาศ</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400">เซ็นเซอร์ : {sensorName || selectedSensor}</p>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-2">
         อัปเดตล่าสุด : {formatTimestamp(fakeClock)}
       </p>
       <p className="text-sm text-gray-500 dark:text-gray-400">
-          ช่วงวันที่เลือก :{" "}
-          {dateRange?.startDate && dateRange?.endDate
-            ? `${formatDateShort(dateRange.startDate)} ถึง ${formatDateShort(dateRange.endDate)}`
-            : "วันนี้"}
-        </p>
-
+        ช่วงวันที่เลือก :{" "}
+        {dateRange?.startDate && dateRange?.endDate
+          ? `${formatDateShort(dateRange.startDate)} ถึง ${formatDateShort(dateRange.endDate)}`
+          : "วันนี้"}
+      </p>
       {/* ✅ ปุ่มเลือกช่วงเวลา (มุมขวาบนของกราฟ) */}
-      <div className="absolute top-4 right-4 z-50" ref={rangeMenuRef}>
+      {/* ✅ ปุ่มเลือกช่วงเวลา + ปุ่มบันทึกรูปภาพ */}
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2" ref={rangeMenuRef}>
+        {/* ปุ่มดาวน์โหลดกราฟ */}
+        <ArrowDownToLine className="text-2xl text-black dark:text-white cursor-pointer" onClick={handleCaptureScreenshot} />
+        {/* ปุ่มเลือกช่วงเวลา */}
         <button
           onClick={() => setShowRangeMenu((prev) => !prev)}
           className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
@@ -260,7 +292,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
         </button>
 
         {showRangeMenu && (
-          <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg z-50">
+          <div className="absolute right-0 mt-12 w-40 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg z-50">
             {[
               { label: "15 นาที", value: "15m" },
               { label: "30 นาที", value: "30m" },
@@ -277,10 +309,10 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
                   setShowRangeMenu(false);
                 }}
                 className={`block w-full text-left px-4 py-2 text-sm transition 
-              ${selectedRange === range.value
+            ${selectedRange === range.value
                     ? "font-bold text-blue-600 dark:text-blue-400"
                     : "text-gray-700 dark:text-gray-300"} 
-              hover:bg-gray-100 dark:hover:bg-gray-700`}
+            hover:bg-gray-100 dark:hover:bg-gray-700`}
               >
                 {range.label}
               </button>

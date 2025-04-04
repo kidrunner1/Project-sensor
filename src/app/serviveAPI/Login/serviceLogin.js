@@ -43,7 +43,7 @@ export async function loginUser(identifier, password, method = 'email') {
         if (error.response) {
             throw new Error('เข้าสู่ระบบผิดพลาด: ' + (error.response.data.message || 'ไม่พบผู้ใช้งาน'));
         } else {
-            throw new Error('เข้าสู่ระบบผิดพลาด: ' + error.message);
+            throw new Error('เข้าสู่ระบบผิดพลาด: ' + error.message || 'ไม่พบผู้ใช้งาน');
         }
     }
 }

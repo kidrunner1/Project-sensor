@@ -135,7 +135,7 @@ const HumidityChart = ({ sensorData }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl w-full h-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800">
+    <div className="bg-white rounded-xl w-full p-4 shadow-md transition-all duration-500 dark:bg-gray-800 h-[400px]">
       <div className="flex flex-col items-start">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
           ความชื้นสัมพัทธ์ (%RH)

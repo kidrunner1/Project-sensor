@@ -51,7 +51,7 @@ export function reloadPage() {
 
     // ✅ เงื่อนไขที่ 2: ถ้า Access Token ยังไม่หมดอายุ → อยู่ในระบบต่อไป
     if (now < accessExpiresDate) {
-        console.log("✅ Access Token ยังใช้งานได้ → ไม่ต้อง Refresh");
+        
         return;
     }
 

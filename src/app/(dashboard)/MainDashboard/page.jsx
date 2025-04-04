@@ -6,13 +6,18 @@ import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData"
 import { FiRefreshCcw, FiCalendar } from "react-icons/fi";
 import Swal from "sweetalert2";
 import Select from "react-select";
+import { FaArrowDown } from "react-icons/fa";
 
 const TempChart = lazy(() => import("../../components/Chart/TempChart"));
 const WindChart = lazy(() => import("../../components/Chart/WindChart"));
 const LineChartGas = lazy(() => import("../../components/Chart/LineChartCH2O"));
 const HumidityChart = lazy(() => import("../../components/Chart/HumidityChart"));
+const HumidityBarChart = lazy(() => import("../../components/Chart/HumidityBarChart"));
+const WindBarChart = lazy(() => import("../../components/Chart/WindBarChart"));
 const SensorMapAllMarkers = lazy(() => import("../../components/MapContent"));
+const TempBarChart = lazy(() => import("../../components/Chart/TempBarChart"));
 const CustomDatepicker = lazy(() => import("../../components/DateRangePicker"));
+const WindDirectBarChart = lazy(() => import("../../components/Chart/WindDirectBarChart"));
 
 const SpinnerFullPage = () => (
   <div className="flex justify-center items-center h-screen dark:bg-gray-900">
@@ -30,8 +35,6 @@ const HomePageTest = () => {
   const activeSensorData = DateRange?.startDate && DateRange?.endDate
     ? filteredSensorData[selectedSensor]
     : sensorData[selectedSensor]; // ยังไม่ได้เลือก → แสดงวันนี้
-
-
 
   const handleDateChange = (range) => {
     setDateRange(range);
@@ -86,11 +89,10 @@ const HomePageTest = () => {
   }
 
   return (
-    <div className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto dark:bg-gray-900 dark:text-white">
+    <div id="dashboard-content" className="p-4 flex flex-col gap-6 h-screen overflow-hidden overflow-y-auto dark:bg-gray-900 dark:text-white">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-800 dark:text-white">SENSOR DASHBOARD</h2>
-
         <div className="flex items-center gap-3 flex-wrap ">
           <div className="relative inline-block  right-0  z-[9999] flex-1 rounded-lg ">
             <CustomDatepicker onDateChange={handleDateChange} />
@@ -134,32 +136,52 @@ const HomePageTest = () => {
             รีเฟรช
           </button>
         </div>
-
-
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 gap-4 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[500px]">
-          <Suspense fallback={<SpinnerFullPage />}>
-            <SensorMapAllMarkers selectedSensor={selectedSensor} />
-          </Suspense>
+      <div className="w-full space-y-6">
+        {/* แถวแรก: แผนที่ + อุณหภูมิ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-[500px] bg-white dark:bg-gray-800 rounded-xl">
+            <Suspense fallback={<SpinnerFullPage />}>
+              <SensorMapAllMarkers selectedSensor={selectedSensor} />
+            </Suspense>
+          </div>
 
-          <Suspense fallback={<SpinnerFullPage />}>
-            <TempChart sensorData={{ id: selectedSensor, ...activeSensorData }} dateRange={dateRange} />
-          </Suspense>
+          <div className="h-[500px] bg-white dark:bg-gray-800 rounded-xl">
+            <Suspense fallback={<SpinnerFullPage />}>
+              <TempChart
+                sensorData={{ id: selectedSensor, ...activeSensorData }}
+                dateRange={dateRange}
+              />
+            </Suspense>
+          </div>
         </div>
 
+        {/* แถวสอง: ความเร็วลม + ความชื้น */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Suspense fallback={<SpinnerFullPage />}>
-            <WindChart sensorData={sensorData} selectedSensor={selectedSensor} />
-          </Suspense>
+          <div className=" dark:bg-gray-800 rounded-xl ">
+            <Suspense fallback={<SpinnerFullPage />}>
+              <WindChart
+                sensorData={sensorData}
+                selectedSensor={selectedSensor}
+              />
+            </Suspense>
+          </div>
 
-          <Suspense fallback={<SpinnerFullPage />}>
-            <HumidityChart sensorData={{ ...sensorData[selectedSensor], sensor_name: sensorData[selectedSensor]?.sensor_name }} />
-          </Suspense>
+          <div className=" dark:bg-gray-800 rounded-xl">
+            <Suspense fallback={<SpinnerFullPage />}>
+              <HumidityChart
+                sensorData={{
+                  ...sensorData[selectedSensor],
+                  sensor_name: sensorData[selectedSensor]?.sensor_name,
+                }}
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
+
 
       <div className="shadow-xl">
         <Suspense fallback={<SpinnerFullPage />}>
@@ -169,6 +191,21 @@ const HomePageTest = () => {
             sensorName={sensorData[selectedSensor]?.sensor_name}
             dateRange={dateRange} // ✅ เพิ่มตรงนี้!
           />
+        </Suspense>
+      </div>
+
+      <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 ">
+        <Suspense fallback={<SpinnerFullPage />}>
+          <TempBarChart sensorData={sensorData[selectedSensor]} dateRange={dateRange} />
+        </Suspense>
+        <Suspense fallback={<SpinnerFullPage />}>
+          <HumidityBarChart sensorData={sensorData[selectedSensor]} dateRange={dateRange} />
+        </Suspense>
+        <Suspense fallback={<SpinnerFullPage />}>
+          <WindBarChart sensorData={sensorData[selectedSensor]} dateRange={dateRange} />
+        </Suspense>
+        <Suspense fallback={<SpinnerFullPage />}>
+          <WindDirectBarChart sensorData={sensorData[selectedSensor]} dateRange={dateRange} />
         </Suspense>
       </div>
     </div>

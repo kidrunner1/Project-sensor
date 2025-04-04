@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useSensorStore } from "@/app/serviveAPI/LoadDataSensor/ServiceLoadData";
 
 export default function Dashboard() {
@@ -10,7 +10,7 @@ export default function Dashboard() {
     connectWebSocket,
     disconnectWebSocket,
   } = useSensorStore();
-
+  const [parameterFilter, setParameterFilter] = useState("all");
   const [selectedSensor, setSelectedSensor] = useState("");
   const [isLoadingSensor, setIsLoadingSensor] = useState(false);
   const [currentTimestamp, setCurrentTimestamp] = useState(new Date().toISOString());
@@ -20,6 +20,16 @@ export default function Dashboard() {
   const [dataTypeFilter, setDataTypeFilter] = useState("all"); // all | environmental | gas
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 100;
+
+  const allParams = useMemo(() => {
+    const selected = sensorData[selectedSensor];
+    if (!selected) return [];
+
+    const environmentalParams = selected.environmental?.map((e) => e.param) || [];
+    const gasParams = selected.gas?.map((g) => g.param) || [];
+    const all = [...new Set([...environmentalParams, ...gasParams])];
+    return all;
+  }, [sensorData, selectedSensor]);
 
   // กำหนดค่าเริ่มต้นสำหรับการแสดงผลข้อมูล
   // Step 1: รวมข้อมูลพร้อม flag type
@@ -37,15 +47,18 @@ export default function Dashboard() {
       })) || []
       : []),
   ]
+    .filter((param) => parameterFilter === "all" || param.param === parameterFilter) // ✅ กรอง param ตาม filter
     .flatMap((param) =>
-      (param.readings || []).map((reading) => ({
-        ...reading,
-        id_param: param.id_param,
-        name: param.param,
-        type: param.param_type,
-      }))
-    )
-    .filter((r) => r.value !== null && r.timestamp);
+      (param.readings || [])
+        .filter((reading) => reading.value !== null && reading.timestamp)
+        .map((reading) => ({
+          ...reading,
+          id_param: param.id_param,
+          name: param.param,
+          type: param.param_type,
+        }))
+    );
+
 
   // Step 2: Group by `name` และ sort ในกลุ่ม
   const groupedByName = rawReadings.reduce((acc, reading) => {
@@ -263,7 +276,7 @@ export default function Dashboard() {
         <h2 className="text-lg font-bold text-gray-800 dark:text-white">
           ข้อมูล SENSOR : {sensorData[selectedSensor]?.sensor_name || selectedSensor}
         </h2>
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex items-center gap-2 mt-4">
           <label className="text-gray-700 dark:text-gray-300 font-semibold">เลือกประเภทข้อมูล : </label>
           <select
             value={dataTypeFilter}
@@ -276,6 +289,25 @@ export default function Dashboard() {
             <option value="all">ทั้งหมด</option>
             <option value="environmental">Environmental</option>
             <option value="gas">Gas</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2 mt-4">
+          <label className="text-gray-700 dark:text-gray-300 font-semibold">เลือก Parameter : </label>
+          <select
+            value={parameterFilter}
+            onChange={(e) => {
+              setParameterFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="p-2 rounded-md border text-gray-800 dark:bg-gray-700 dark:text-white"
+          >
+            <option value="all">ทั้งหมด</option>
+            {allParams.map((param) => (
+              <option key={param} value={param}>
+                {param}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -303,7 +335,7 @@ export default function Dashboard() {
             ))}
           </tbody>
         </table>
-        
+
         <div className="flex justify-center gap-4 mt-4">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
