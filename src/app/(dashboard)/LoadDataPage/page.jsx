@@ -7,7 +7,8 @@ export default function Dashboard() {
     sensorData,
     loading,
     error,
-    connectWebSocket,
+    // connectWebSocket,
+    connectWebSocketNoAuth,
     disconnectWebSocket,
   } = useSensorStore();
   const [parameterFilter, setParameterFilter] = useState("all");
@@ -110,19 +111,31 @@ export default function Dashboard() {
     }
   }, [selectedSensor, sensorData]);
 
-  useEffect(() => {
-    const newAccessToken = sessionStorage.getItem("access_token");
-    const newUserId = sessionStorage.getItem("user_id");
-    const newCompanyId = sessionStorage.getItem("company_id");
+  // useEffect(() => {
+  //   const newAccessToken = sessionStorage.getItem("access_token");
+  //   const newUserId = sessionStorage.getItem("user_id");
+  //   const newCompanyId = sessionStorage.getItem("company_id");
 
-    if (newAccessToken && newUserId && newCompanyId) {
-      // ✅ ใช้ Store function แทนการสร้าง WebSocket ใหม่
-      connectWebSocket(newUserId, newCompanyId, newAccessToken);
+  //   if (newAccessToken && newUserId && newCompanyId) {
+  //     // ✅ ใช้ Store function แทนการสร้าง WebSocket ใหม่
+  //     connectWebSocket(newUserId, newCompanyId, newAccessToken);
+  //   }
+
+  //   return () => {
+  //     // ✅ Cleanup → Disconnect WebSocket
+  //     disconnectWebSocket();
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    const newCompanyId = sessionStorage.getItem("company_id"); // ✅ ไม่ต้องดึง access_token / user_id แล้ว
+
+    if (newCompanyId) {
+      connectWebSocketNoAuth(newCompanyId); // ✅ ใช้ connectWebSocketNoAuth
     }
 
     return () => {
-      // ✅ Cleanup → Disconnect WebSocket
-      disconnectWebSocket();
+      disconnectWebSocket(); // ✅ ปิด WebSocket ตอน unmount
     };
   }, []);
 

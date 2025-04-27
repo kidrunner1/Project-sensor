@@ -52,6 +52,16 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
 
   const graphRef = useRef(null); // ใช้ ref เพื่อเลือกกราฟ
 
+  const adjustH2SValue = (param, value) => {
+    if (param.toLowerCase().includes("h2s")) {
+      const adjustment = 0;  // ✅ บวกเพิ่ม
+      const multiadjustment = 0.5; // ✅ คูณเพิ่ม
+      const adjusted = (value * multiadjustment) + adjustment;
+      return adjusted < 0 ? 0 : adjusted; // ✅ ถ้าติดลบ → เซ็ตเป็น 0
+    }
+    return value;
+  };
+
   const handleCaptureScreenshot = async () => {
     if (!graphRef.current) return;
     
@@ -171,7 +181,7 @@ const LineChartGas = ({ gasData, selectedSensor, sensorName, dateRange }) => {
     const seriesData = gasNames.map((param) => {
       const allReadings = gasData.find((g) => g.param === param)?.readings || [];
       const filtered = filterReadingsByDate(allReadings, latestTimestamp, selectedRange);
-      const values = filtered.map((r) => parseFloat(r.value).toFixed(2));
+      const values = filtered.map((r) => adjustH2SValue(param, parseFloat(r.value)).toFixed(2));
       
       return {
         name: param,
